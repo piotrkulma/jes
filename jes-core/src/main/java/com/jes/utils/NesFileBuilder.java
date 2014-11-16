@@ -17,39 +17,21 @@ import java.text.MessageFormat;
 public class NesFileBuilder {
     private static Logger LOG = LogManager.getLogger(NesFileBuilder.LOG);
 
-    public NesFileBuilder() {
-    }
-
-    public static NESFile loadNesFile(String path) {
-        return null;
-    }
-
-    public static NESFileHeader loadNesFileHeader(String path) {
+    public static NESFile buildNESFile(String path) {
+        NESFile file = new NESFile();
         NESFileHeader header = new NESFileHeader();
-        LOG.info(MessageFormat.format("LOADING header from file ''{0}''", path));
+        file.setHeader(header);
+
+        LOG.info(MessageFormat.format("LOADING DATA FROM FILE ''{0}''", path));
 
         try {
-            byte[] signature = new byte[4];
             FileInputStream fis = new FileInputStream(new File(path));
 
-            fis.read(signature, 0, 4);
-            header.setFileSignature(new String(signature));
-            LOG.info("file signature: " + header.getFileSignature());
+            LOG.info("#### FETCHING FILE HEADER");
+            fetchHeader(file, fis);
 
-            header.setRomBanks(fis.read());
-            LOG.info("number of 16kB ROM banks: : " + header.getRomBanks());
-
-            header.setVromBanks(fis.read());
-            LOG.info("number of 16kB VROM banks: : " + header.getVromBanks());
-
-            int byte6 = fis.read();
-            LOG.info("conf byte 6: " + byte6);
-
-            int byte7 = fis.read();
-            LOG.info("conf byte 7: " + byte7);
-
-            header.setRamBanks(fis.read());
-            LOG.info("number of 8kB RAM banks: " + header.getRamBanks());
+            LOG.info("#### FETCHING FILE DATA");
+            fetchData(file, fis);
 
             fis.close();
         } catch (FileNotFoundException fnfe) {
@@ -57,6 +39,76 @@ public class NesFileBuilder {
         } catch (IOException e) {
             LOG.error("", e);
         }
-        return null;
+
+        LOG.info("DATA FROM FILE LOADED");
+        return file;
+    }
+
+    private static void fetchData(NESFile file, FileInputStream fis) throws IOException{
+        if(file.isTrainer()) {
+            LOG.info("TRAINER FOUND");
+            LOG.info(MessageFormat.format("AVAILABLE DATA: {0}", fis.available()));
+
+            byte[] trainer = new byte[NESFile.SIZE_TRAINER];
+            fis.read(trainer, 0, NESFile.SIZE_TRAINER);
+
+            file.setTrainer(trainer);
+        }
+
+        LOG.info(MessageFormat.format("AVAILABLE DATA: {0}", fis.available()));
+        byte[][] romBank = new byte[file.getHeader().getRomBanks()][NESFile.SIZE_ROM_BANK];
+
+        LOG.info("LOADING 16kB ROM BANKS");
+        for( int i=0; i<file.getHeader().getRomBanks(); i++) {
+            fis.read(romBank[i], 0, NESFile.SIZE_ROM_BANK);
+            //LOG.info(MessageFormat.format("loaded 16kB ROM bank number {0}", (i)));
+        }
+
+        file.setRomBankData(romBank);
+
+        LOG.info(MessageFormat.format("AVAILABLE DATA: {0}", fis.available()));
+        byte[][] vRomBank = new byte[file.getHeader().getVromBanks()][NESFile.SIZE_VROM_BANK];
+
+        LOG.info("LOADING 8kB VROM BANKS");
+        for( int i=0; i<file.getHeader().getVromBanks(); i++) {
+            fis.read(vRomBank[i], 0, NESFile.SIZE_VROM_BANK);
+            //LOG.info(MessageFormat.format("loaded 8kB VROM bank number {0}", (i)));
+        }
+
+        file.setvRomBankData(vRomBank);
+
+    }
+
+    private static void fetchHeader(NESFile file, FileInputStream fis) throws IOException{
+        byte[] signature = new byte[NESFile.SIZE_SIGNATURE];
+        byte[] reserved = new byte[NESFile.SIZE_RESERVED_BYTE_10_TO_15];
+
+        NESFileHeader header = file.getHeader();
+
+        fis.read(signature, 0, NESFile.SIZE_SIGNATURE);
+        header.setFileSignature(new String(signature));
+        LOG.info("FILE SIGNATURE: " + header.getFileSignature());
+
+        header.setRomBanks(fis.read());
+        LOG.info("NUMBER 16kB ROM BANKS: : " + header.getRomBanks());
+
+        header.setVromBanks(fis.read());
+        LOG.info("NUMBER 8kB VROM BANKS: : " + header.getVromBanks());
+
+        header.setConfByte6(CommonUtils.getByteArray(fis.read(), 8));
+        LOG.info("CONF BYTE 6: " + CommonUtils.byteArrayToString(header.getConfByte6()));
+
+        header.setConfByte7(CommonUtils.getByteArray(fis.read(), 8));
+        LOG.info("CONF BYTE 7: " + CommonUtils.byteArrayToString(header.getConfByte7()));
+
+        header.setRamBanks(fis.read());
+        LOG.info("NUMBER OF 8kB RAM BANKS: " + header.getRamBanks());
+
+        header.setConfByte9(CommonUtils.getByteArray(fis.read(), 8));
+        LOG.info("CONF BYTE 9: " + CommonUtils.byteArrayToString(header.getConfByte9()));
+
+        fis.read(reserved, 0, NESFile.SIZE_RESERVED_BYTE_10_TO_15);
+        header.setReserved(reserved);
+        LOG.info("RESERVED: " + CommonUtils.byteArrayToString(header.getReserved()));
     }
 }
