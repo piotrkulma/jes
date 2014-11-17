@@ -1,4 +1,4 @@
-package com.jes.com.jes.nesfile;
+package com.jes.nesfile;
 
 /**
  * Created by Piotr Kulma on 2014-11-16.

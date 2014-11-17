@@ -1,12 +1,22 @@
 package com.jes.utils;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 /**
  * Created by Piotrek on 2014-11-16.
  */
 public class CommonUtils {
+    private static Logger LOG = LogManager.getLogger(CommonUtils.LOG);
+
+
     public static int[] getByteArray(int data, int bitLen) {
         int diff = 0;
         int[] array = new int[bitLen];
+
+        if(data < 0) {
+            data = data + 256;
+        }
 
         String bin = Integer.toBinaryString(data);
 

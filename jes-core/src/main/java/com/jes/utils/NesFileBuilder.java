@@ -1,7 +1,7 @@
 package com.jes.utils;
 
-import com.jes.com.jes.nesfile.NESFile;
-import com.jes.com.jes.nesfile.NESFileHeader;
+import com.jes.nesfile.NESFile;
+import com.jes.nesfile.NESFileHeader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -61,7 +61,6 @@ public class NesFileBuilder {
         LOG.info("LOADING 16kB ROM BANKS");
         for( int i=0; i<file.getHeader().getRomBanks(); i++) {
             fis.read(romBank[i], 0, NESFile.SIZE_ROM_BANK);
-            //LOG.info(MessageFormat.format("loaded 16kB ROM bank number {0}", (i)));
         }
 
         file.setRomBankData(romBank);
@@ -72,7 +71,6 @@ public class NesFileBuilder {
         LOG.info("LOADING 8kB VROM BANKS");
         for( int i=0; i<file.getHeader().getVromBanks(); i++) {
             fis.read(vRomBank[i], 0, NESFile.SIZE_VROM_BANK);
-            //LOG.info(MessageFormat.format("loaded 8kB VROM bank number {0}", (i)));
         }
 
         file.setvRomBankData(vRomBank);

@@ -1,4 +1,6 @@
-package com.jes.com.jes.nesfile;
+package com.jes.nesfile;
+
+import com.jes.nesfile.NESFileHeader;
 
 /**
  * Created by Piotr Kulma on 2014-11-16.
