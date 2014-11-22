@@ -10,30 +10,25 @@ import java.util.List;
  * Created by Piotr Kulma on 2014-11-17.
  */
 public class VROMExtractor {
-    private int bankNumber;
-    private byte[][] bank;
+    private byte[] bank;
 
     public VROMExtractor() {
         bank = null;
     }
 
-    public void setBank(byte[][] bank) {
+    public void setBank(byte[] bank) {
         this.bank = bank;
-    }
-
-    public void setBankNumber(int bankNumber) {
-        this.bankNumber = bankNumber;
     }
 
     public List<Tile> extract() {
         int[] chA, chB;
         List<Tile> result = new ArrayList<Tile>();
 
-        for(int i=0; i<bank[bankNumber].length; i+=16) {
+        for(int i=0; i<bank.length; i+=16) {
             Tile tile = new Tile();
             for(int j=0; j<8; j++) {
-                chA = CommonUtils.getByteArray(bank[bankNumber][i + j], 8);
-                chB = CommonUtils.getByteArray(bank[bankNumber][i + j + 8], 8);
+                chA = CommonUtils.getByteArray(bank[i + j], 8);
+                chB = CommonUtils.getByteArray(bank[i + j + 8], 8);
 
                 Integer[] cmp = compose(chA, chB);
                 tile.getTile().add(cmp);

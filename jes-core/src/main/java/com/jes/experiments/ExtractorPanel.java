@@ -1,7 +1,10 @@
 package com.jes.experiments;
 
+import com.jes.Configuration;
+import com.jes.nes.Nes;
 import com.jes.nesfile.NESFile;
-import com.jes.utils.NesFileBuilder;
+import com.jes.utils.CommonUtils;
+import com.jes.nesfile.NesFileBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -15,12 +18,14 @@ import java.util.List;
 public class ExtractorPanel extends JPanel {
     public static final int GRAPHIC_SCALE = 4;
 
-    private static Logger LOG = LogManager.getLogger(ExtractorPanel.LOG);
-    private NESFile header;
+    private static Logger LOG = LogManager.getLogger(ExtractorPanel.class);
+    private NESFile nesFile;
+    private Nes nes;
     private VROMExtractor extractor;
 
     public ExtractorPanel() {
-        header = NesFileBuilder.buildNESFile("c:/smb.nes");
+        nesFile = NesFileBuilder.buildNESFile(Configuration.TEST_ROM_PATH);
+        nes = new Nes(nesFile);
         extractor = new VROMExtractor();
     }
 
@@ -31,11 +36,11 @@ public class ExtractorPanel extends JPanel {
     }
 
     private void drawNesBitmaps(Graphics2D g2d) {
-        boolean left = true;
-        byte[][] vrom = header.getvRomBankData();
+        byte[] vrom = CommonUtils.getPartialArray(nes.getPpuMemoryMap(),
+                Nes.PPU_PATTERN_TABLES_BEGIN_ADDR,
+                Nes.PPU_PATTERN_TABLES_END_ADDR);
 
         extractor.setBank(vrom);
-        extractor.setBankNumber(0);
 
         List<Tile> tileList = extractor.extract();
 

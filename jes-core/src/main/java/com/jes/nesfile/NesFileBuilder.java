@@ -1,7 +1,6 @@
-package com.jes.utils;
+package com.jes.nesfile;
 
-import com.jes.nesfile.NESFile;
-import com.jes.nesfile.NESFileHeader;
+import com.jes.utils.CommonUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -9,13 +8,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URL;
 import java.text.MessageFormat;
 
 /**
  * Created by Piotr Kulma on 2014-11-16.
  */
 public class NesFileBuilder {
-    private static Logger LOG = LogManager.getLogger(NesFileBuilder.LOG);
+    private static Logger LOG = LogManager.getLogger(NesFileBuilder.class);
 
     public static NESFile buildNESFile(String path) {
         NESFile file = new NESFile();
@@ -25,7 +25,8 @@ public class NesFileBuilder {
         LOG.info(MessageFormat.format("LOADING DATA FROM FILE ''{0}''", path));
 
         try {
-            FileInputStream fis = new FileInputStream(new File(path));
+            URL resourceURL = ClassLoader.getSystemResource(path);
+            FileInputStream fis = new FileInputStream(new File(resourceURL.getFile()));
 
             LOG.info("#### FETCHING FILE HEADER");
             fetchHeader(file, fis);
