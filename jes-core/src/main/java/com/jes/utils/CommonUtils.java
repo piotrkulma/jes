@@ -6,7 +6,7 @@ import org.apache.logging.log4j.Logger;
 /**
  * Created by Piotr Kulma on 2014-11-16.
  */
-public class CommonUtils {
+public final class CommonUtils {
     public static Logger LOG = LogManager.getLogger(CommonUtils.class);
 
     public static final int INDEX_OPERATION_CODE    = 0;
@@ -19,29 +19,6 @@ public class CommonUtils {
             "5", "6", "7", "8", "9",
             "A", "B", "C", "D", "E",
             "F"};
-
-    public static int[] getByteArray(int data, int bitLen) {
-        int diff = 0;
-        int[] array = new int[bitLen];
-
-        if(data < 0) {
-            data = data + 256;
-        }
-
-        String bin = Integer.toBinaryString(data);
-
-        diff = bitLen - bin.length();
-
-        if(diff > 0) {
-            bin = addZerosBefore(bin, diff);
-        }
-
-        for(int i=0; i<bin.length(); i++) {
-            array[i] = (bin.charAt(i) - 48);
-        }
-
-        return array;
-    }
 
     public static String addZerosBefore(String s, int zeros) {
         for(int i=0; i<zeros; i++) {
@@ -83,6 +60,18 @@ public class CommonUtils {
         return data;
     }
 
+    public static String byteArrayToBinaryString(int array[]) {
+        String data = "";
+
+        if(array.length > 0) {
+            for (int i = 0; i < array.length; i++) {
+                data += array[i]+"";
+            }
+        }
+
+        return data;
+    }
+
     public static byte[] getPartialArray(byte[] array, int beginIndex, int endIndex) {
         int index = 0;
         byte[] result = new byte[endIndex - beginIndex];
@@ -95,10 +84,10 @@ public class CommonUtils {
     }
 
     public static String convertBCDtoHex(byte bcd) {
-        int[] bcdArray = CommonUtils.getByteArray(bcd, 8);
+        int[] bcdArray = BinaryMath.getBinaryArray(bcd, 8);
 
-        int upper = binaryToDecimal(new int[]{bcdArray[0], bcdArray[1], bcdArray[2], bcdArray[3]});
-        int lower = binaryToDecimal(new int[]{bcdArray[4], bcdArray[5], bcdArray[6], bcdArray[7]});
+        int upper = BinaryMath.binaryToDecimal(new int[]{bcdArray[0], bcdArray[1], bcdArray[2], bcdArray[3]});
+        int lower = BinaryMath.binaryToDecimal(new int[]{bcdArray[4], bcdArray[5], bcdArray[6], bcdArray[7]});
 
         StringBuilder builder = new StringBuilder();
         builder.append(HEX_VALUES[upper]);
@@ -107,13 +96,17 @@ public class CommonUtils {
         return builder.toString();
     }
 
-    public static int binaryToDecimal(int[] bcdArray) {
-        int result = 0;
-        int exp = bcdArray.length - 1;
-        for(int i=0; i<bcdArray.length; i++) {
-            result += (bcdArray[i] * Math.pow(2, exp - i));
+    public static int[] combineTwoArrays(int[] a, int b[]) {
+        int[] c = new int[a.length + b.length];
+
+        for(int i=0; i<c.length; i++) {
+            if(i<a.length) {
+                c[i] = a[i];
+            } else {
+                c[i] = b[i - (a.length)];
+            }
         }
 
-        return result;
+        return c;
     }
 }

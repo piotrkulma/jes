@@ -1,6 +1,6 @@
 package com.jes.utils;
 
-import com.jes.emu6502.AddressingMode;
+import com.jes.emu6502.addressing.AddressingMode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

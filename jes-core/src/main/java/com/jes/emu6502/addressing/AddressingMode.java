@@ -1,4 +1,4 @@
-package com.jes.emu6502;
+package com.jes.emu6502.addressing;
 
 /**
  * Created by Piotr Kulma on 2014-11-22.

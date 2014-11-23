@@ -1,6 +1,10 @@
 package com.jes.emu6502;
 
 import com.jes.Configuration;
+import com.jes.emu6502.addressing.AddressingModeValueResolver;
+import com.jes.emu6502.instruction.Instruction;
+import com.jes.emu6502.instruction.InstructionExecutor;
+import com.jes.emu6502.instruction.Mnemonic;
 import com.jes.utils.CommonUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -9,9 +13,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -23,16 +25,19 @@ public class Emulator6502 {
     public static final int CPU_MEMORY_SIZE = 0x10000;
 
     private int programCounter;//16-bit;
-    private byte accumulator;
-    private byte registerX;
-    private byte registerY;
+    public byte acm;
+    public byte regX;
+    public byte regY;
     private byte stackPointer;
-    private StatusRegister statusRegister;
+    public StatusRegister sr;
 
     private byte[] memoryMap;
 
     private Map<String, String> mnemonics;
     private Map<String, Integer> bytesNumber;
+
+    private InstructionExecutor instructionExecutor;
+    private AddressingModeValueResolver addressingResolver;
 
     public Emulator6502() {
         try {
@@ -40,6 +45,9 @@ public class Emulator6502 {
             initializeCpu();
 
             memoryMap = new byte[CPU_MEMORY_SIZE];
+
+            instructionExecutor = new InstructionExecutor(this);
+            addressingResolver = new AddressingModeValueResolver(this);
         }catch(Exception e) {
             LOG.error(", e");
             throw new RuntimeException(e);
@@ -48,19 +56,21 @@ public class Emulator6502 {
 
     public void runEmulation() {
         try {
-            //while(true) {
-                Instruction instr = getActualInstruction();
-                executeInstruction(instr);
-            LOG.info("xxx");
-                //Thread.sleep(400);
-           // }
+            Instruction instr = getActualInstruction();
+            //TODO po zaimplementowaniu adresowań oraz instrukcji
+            //addressingResolver.resolveValue(instr.getCode(), instr.getParameters());
+            //instructionExecutor.executeOperation(instr.getCode(), instr.getParameters());
         } catch (Exception e) {
             LOG.error("", e);
         }
     }
 
-    private void executeInstruction(Instruction instr) {
-        //TODO
+    public void setMemoryCell(int index, byte value) {
+        memoryMap[index] = value;
+    }
+
+    public byte getMemoryCell(int index) {
+        return memoryMap[index];
     }
 
     private Instruction getActualInstruction() {
@@ -71,7 +81,7 @@ public class Emulator6502 {
             int bytes = bytesNumber.get(operationCode) - 1;
             String mnemonic = mnemonics.get(operationCode);
 
-            instruction = new Instruction(mnemonic, bytes);
+            instruction = new Instruction(Mnemonic.valueOf(mnemonic), null, bytes);
 
             if (bytes > 0) {
                 for (int j = 0; j < bytes; j++) {
@@ -101,19 +111,11 @@ public class Emulator6502 {
 
     private void initializeCpu() {
         programCounter = 32768;
-        accumulator = 0;
-        registerX = 0;
-        registerY = 0;
+        acm = 0;
+        regX = 0;
+        regY = 0;
         stackPointer = 0;
 
-        statusRegister = new StatusRegister();
-    }
-
-    public byte[] getMemoryMap() {
-        return memoryMap;
-    }
-
-    public void setMemoryCell(int index, byte value) {
-        memoryMap[index] = value;
+        sr = new StatusRegister();
     }
 }

@@ -27,8 +27,8 @@ public class VROMExtractor {
         for(int i=0; i<bank.length; i+=16) {
             Tile tile = new Tile();
             for(int j=0; j<8; j++) {
-                chA = CommonUtils.getByteArray(bank[i + j], 8);
-                chB = CommonUtils.getByteArray(bank[i + j + 8], 8);
+                chA = CommonUtils.getBinaryArray(bank[i + j], 8);
+                chB = CommonUtils.getBinaryArray(bank[i + j + 8], 8);
 
                 Integer[] cmp = compose(chA, chB);
                 tile.getTile().add(cmp);

@@ -1,5 +1,6 @@
 package com.jes.nesfile;
 
+import com.jes.utils.BinaryMath;
 import com.jes.utils.CommonUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -94,16 +95,16 @@ public class NesFileBuilder {
         header.setVromBanks(fis.read());
         LOG.info("NUMBER 8kB VROM BANKS: : " + header.getVromBanks());
 
-        header.setConfByte6(CommonUtils.getByteArray(fis.read(), 8));
+        header.setConfByte6(BinaryMath.getBinaryArray(fis.read(), 8));
         LOG.info("CONF BYTE 6: " + CommonUtils.byteArrayToString(header.getConfByte6()));
 
-        header.setConfByte7(CommonUtils.getByteArray(fis.read(), 8));
+        header.setConfByte7(BinaryMath.getBinaryArray(fis.read(), 8));
         LOG.info("CONF BYTE 7: " + CommonUtils.byteArrayToString(header.getConfByte7()));
 
         header.setRamBanks(fis.read());
         LOG.info("NUMBER OF 8kB RAM BANKS: " + header.getRamBanks());
 
-        header.setConfByte9(CommonUtils.getByteArray(fis.read(), 8));
+        header.setConfByte9(BinaryMath.getBinaryArray(fis.read(), 8));
         LOG.info("CONF BYTE 9: " + CommonUtils.byteArrayToString(header.getConfByte9()));
 
         fis.read(reserved, 0, NESFile.SIZE_RESERVED_BYTE_10_TO_15);
