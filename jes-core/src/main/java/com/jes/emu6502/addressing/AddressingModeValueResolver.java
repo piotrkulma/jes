@@ -20,10 +20,10 @@ public class AddressingModeValueResolver {
         switch(mode) {
             case IMM: return immediate(attributes[0]);
             case AB: return absolute(attributes);
-            case ABX: return absoluteX(attributes[0]);
-            case ABY: return absoluteY(attributes[0]);
-            case INX: break;
-            case INY: break;
+            case ABX: return absoluteX(attributes);
+            case ABY: return absoluteY(attributes);
+            case INX: return indirectX(attributes[0]);
+            case INY: return indirectY(attributes[0]);
             case ZP: return zeroPage(attributes[0]);
             case ZPX: return zeroPageX(attributes[0]);
             case ZPY: return zeroPageY(attributes[0]);
@@ -79,7 +79,7 @@ public class AddressingModeValueResolver {
      * Consider situation, eg:
      * params[0] = $32 - lsb
      * params[1] = $40 - msb
-     * value -> $4032
+     * value -> memory[$4032]
      *
      * @param params
      * @return
@@ -88,7 +88,7 @@ public class AddressingModeValueResolver {
         byte lsbAddress = params[0];
         byte msbAddress = params[1];
 
-        int value = BinaryMath.combineTwoBytes(msbAddress, lsbAddress);
+        int value = cpu.getMemoryCell(BinaryMath.combineTwoBytes(msbAddress, lsbAddress));
 
         return value;
     }
@@ -97,26 +97,35 @@ public class AddressingModeValueResolver {
      * Adding the content of the X register to an absolute
      * address, eg:
      *
-     * param -> $2000
+     * param[0] -> $aa
+     * param[1] => $bb
      * X -> $92
-     * value - > $2092
+     * value -> memory[$bbaa + X]
      *
-     * @param param
+     * @param params
      * @return
      */
-    public int absoluteX(byte param) {
-        int value = (byte) (param + cpu.regX);
+    public int absoluteX(byte[] params) {
+        byte lsbAddress = params[0];
+        byte msbAddress = params[1];
+        int longAddress = cpu.getMemoryCell(BinaryMath.combineTwoBytes(msbAddress, lsbAddress));
+
+        int value = cpu.getMemoryCell(longAddress + cpu.regX);
         return value;
     }
 
     /**
      * Same as absoluteX but uses Y register instead.
      *
-     * @param param
+     * @param params
      * @return
      */
-    public int absoluteY(byte param) {
-        int value = (byte) (param + cpu.regX);
+    public int absoluteY(byte[] params) {
+        byte lsbAddress = params[0];
+        byte msbAddress = params[1];
+        int longAddress = cpu.getMemoryCell(BinaryMath.combineTwoBytes(msbAddress, lsbAddress));
+
+        int value = cpu.getMemoryCell(longAddress + cpu.regY);
         return value;
     }
 
@@ -128,7 +137,10 @@ public class AddressingModeValueResolver {
      * memory[$F0] -> $01 - lsb
      * memory[$F1] -> $cc - msb
      *
-     * value = $cc01
+     * memory[$cc01] -> $xx
+     * memory[$cc01 + 1] -> $yy
+     *
+     * value = memory[$yyxx]
      *
      * @param param adresses
      * @return
@@ -137,8 +149,59 @@ public class AddressingModeValueResolver {
         byte lsbAddress = cpu.getMemoryCell(param[0]);
         byte msbAddress = cpu.getMemoryCell(param[1]);
 
-        int value = BinaryMath.combineTwoBytes(msbAddress, lsbAddress);
+        int longAddress = BinaryMath.combineTwoBytes(msbAddress, lsbAddress);
 
+        byte lsb = cpu.getMemoryCell(longAddress);
+        byte msb = cpu.getMemoryCell(longAddress + 1);
+
+        int value = cpu.getMemoryCell(BinaryMath.combineTwoBytes(msb, lsb));
+        return value;
+    }
+
+    /**
+     * Consider situation, eg:
+     * X -> $10
+     * param -> $5
+     *
+     * memory[$15] -> $20
+     * memory[$15 + 1] -> $44
+     *
+     * value -> memory[$4420]
+     *
+     * @param param
+     * @return
+     */
+
+    private int indirectX(byte param) {
+        int address = (byte)(param + cpu.regX);
+        byte lsbAddress = cpu.getMemoryCell(address);
+        byte msbAddress = cpu.getMemoryCell(address + 1);
+
+        int value = cpu.getMemoryCell(BinaryMath.combineTwoBytes(msbAddress, lsbAddress));
+
+        return value;
+    }
+
+    /**
+     * WTF addressing mode :)
+     * Most fucked up addresing
+     *
+     * param -> $5
+     * memory[$5] -> $bb
+     * memory[$5 + 1] -> $aa
+     *
+     * value -> memory[$aabb + Y]
+     *
+     * @param param
+     * @return
+     */
+    private int indirectY(byte param) {
+        int address = cpu.getMemoryCell(param);
+        byte lsbAddress = cpu.getMemoryCell(address);
+        byte msbAddress = cpu.getMemoryCell(address + 1);
+
+        int longAddress = BinaryMath.combineTwoBytes(msbAddress, lsbAddress) + cpu.regY;
+        int value = cpu.getMemoryCell(longAddress);
         return value;
     }
 
@@ -168,42 +231,27 @@ public class AddressingModeValueResolver {
      * X -> $04
      * attr -> $20
      * (x + attr) -> $24
-     * memory($24) -> $74 - lsb
-     * memory($24 + 1) -> $20 - mbs
-     * address -> $2074
-     * value to operate with -> memory($2074)
+     * value -> memory[$24]
      *
      * @param attr operation parameter
      */
     private int zeroPageX(byte attr) {
-        byte sum = (byte)(attr + cpu.regX);
+        byte address = (byte)(attr + cpu.regX);
 
-        byte lsbAddress = cpu.getMemoryCell(sum);
-        byte msbAddress = cpu.getMemoryCell(sum + 1);
-
-        int address = BinaryMath.combineTwoBytes(msbAddress, lsbAddress);
-        byte val = cpu.getMemoryCell(address);
+        int val = cpu.getMemoryCell(address);
 
         return val;
     }
 
     /**
-     * Consider situation, eg:
-     * attr -> $86
-     * Y -> $10
-     * memory($86) -> $28 - lsb
-     * memory($86 +1) -> $40 - msb
-     * lsb + Y = $28 + $10 = $38 - lsb
-     * value -> memory( $(msb lsb) ) -> memory($4038)
+     * Same as zeroPageX but uses Y register
      *
      * @param attr operation attribute
      */
     private int zeroPageY(byte attr) {
-        byte lsbAddress = (byte)(cpu.getMemoryCell(attr) + cpu.regY);
-        byte msbAddress = cpu.getMemoryCell(attr + 1);
+        byte address = (byte)(attr + cpu.regY);
 
-        int address = BinaryMath.combineTwoBytes(msbAddress, lsbAddress);
-        byte val = cpu.getMemoryCell(address);
+        int val = cpu.getMemoryCell(address);
 
         return val;
     }
