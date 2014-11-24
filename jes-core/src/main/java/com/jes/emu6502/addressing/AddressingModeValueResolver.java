@@ -20,20 +20,56 @@ public class AddressingModeValueResolver {
         switch(mode) {
             case IMM: return immediate(attributes[0]);
             case AB: return absolute(attributes);
-            case ABX: break;
-            case ZBY: break;
+            case ABX: return absoluteX(attributes[0]);
+            case ABY: return absoluteY(attributes[0]);
             case INX: break;
             case INY: break;
             case ZP: return zeroPage(attributes[0]);
             case ZPX: return zeroPageX(attributes[0]);
             case ZPY: return zeroPageY(attributes[0]);
-            case ACC: break;
-            case REL: break;
-            case IMP: break;
-            case IND: break;
+            case ACC: return accumulator();
+            case REL: return relative(attributes[0]);
+            case IMP: return implied();
+            case IND: return indirect(attributes);
         }
 
         throw new RuntimeException(MessageFormat.format("Could not resolve addresing mode ''{0}''", mode.name()));
+    }
+
+    /**
+     * Relative addressing on the 6502 is only used for branch
+     * operations. The byte after the opcode is the branch offset.
+     * If the branch is taken, the new address will the the current
+     * PC plus the offset.
+     *
+     * @param offset
+     * @return
+     */
+    public int relative(byte offset) {
+        int value = (cpu.pc + offset);
+
+        return value;
+    }
+
+    /**
+     * Operates only on accumulator
+     *
+     * @return
+     */
+    public int accumulator() {
+        int value = cpu.acm;
+
+        return value;
+    }
+
+
+    /**
+     * Implied instructions has no attributes
+     *
+     * @return nothing
+     */
+    public int implied() {
+        return 0;
     }
 
     /**
@@ -49,8 +85,57 @@ public class AddressingModeValueResolver {
      * @return
      */
     private int absolute(byte[] params) {
-        byte lsbAddress = cpu.getMemoryCell(params[0]);
-        byte msbAddress = cpu.getMemoryCell(params[1]);
+        byte lsbAddress = params[0];
+        byte msbAddress = params[1];
+
+        int value = BinaryMath.combineTwoBytes(msbAddress, lsbAddress);
+
+        return value;
+    }
+
+    /**
+     * Adding the content of the X register to an absolute
+     * address, eg:
+     *
+     * param -> $2000
+     * X -> $92
+     * value - > $2092
+     *
+     * @param param
+     * @return
+     */
+    public int absoluteX(byte param) {
+        int value = (byte) (param + cpu.regX);
+        return value;
+    }
+
+    /**
+     * Same as absoluteX but uses Y register instead.
+     *
+     * @param param
+     * @return
+     */
+    public int absoluteY(byte param) {
+        int value = (byte) (param + cpu.regX);
+        return value;
+    }
+
+    /**
+     * Consider situation, eg:
+     * param[0] -> $F0
+     * param[1] -> $F1
+     *
+     * memory[$F0] -> $01 - lsb
+     * memory[$F1] -> $cc - msb
+     *
+     * value = $cc01
+     *
+     * @param param adresses
+     * @return
+     */
+    private int indirect(byte[] param) {
+        byte lsbAddress = cpu.getMemoryCell(param[0]);
+        byte msbAddress = cpu.getMemoryCell(param[1]);
 
         int value = BinaryMath.combineTwoBytes(msbAddress, lsbAddress);
 

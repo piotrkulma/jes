@@ -7,7 +7,7 @@ public enum AddressingMode {
     IMM,
     AB,
     ABX,
-    ZBY,
+    ABY,
     INX,
     INY,
     ZP,

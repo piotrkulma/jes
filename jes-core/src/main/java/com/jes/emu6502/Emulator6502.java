@@ -24,7 +24,7 @@ public class Emulator6502 {
 
     public static final int CPU_MEMORY_SIZE = 0x10000;
 
-    private int programCounter;//16-bit;
+    public int pc;//16-bit;
     public byte acm;
     public byte regX;
     public byte regY;
@@ -76,7 +76,7 @@ public class Emulator6502 {
     private Instruction getActualInstruction() {
         Instruction instruction = null;
 
-        String operationCode = CommonUtils.convertBCDtoHex(memoryMap[programCounter++]);
+        String operationCode = CommonUtils.convertBCDtoHex(memoryMap[pc++]);
         if(mnemonics.containsKey(operationCode)) {
             int bytes = bytesNumber.get(operationCode) - 1;
             String mnemonic = mnemonics.get(operationCode);
@@ -85,7 +85,7 @@ public class Emulator6502 {
 
             if (bytes > 0) {
                 for (int j = 0; j < bytes; j++) {
-                    instruction.setParameter(j, memoryMap[programCounter++]);
+                    instruction.setParameter(j, memoryMap[pc++]);
                 }
             }
         }
@@ -110,7 +110,7 @@ public class Emulator6502 {
     }
 
     private void initializeCpu() {
-        programCounter = 32768;
+        pc = 32768;
         acm = 0;
         regX = 0;
         regY = 0;
