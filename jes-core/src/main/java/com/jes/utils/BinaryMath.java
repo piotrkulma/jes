@@ -4,15 +4,39 @@ package com.jes.utils;
  * Created by Piotr Kulma on 2014-11-23.
  */
 public final class BinaryMath {
-    public static final int DEFAULT_BYTE_LEN = 8;
+    public static final int HIGH_BYTE_START_INDEX   = 0;
+    public static final int HIGH_BYTE_END_INDEX     = 7;
+    public static final int LOW_BYTE_START_INDEX    = 8;
+    public static final int LOW_BYTE_END_INDEX      = 15;
 
-    public static byte add(byte opA, byte opB) {
-        return (byte)(opA + opB);
-    }
+    public static final int DEFAULT_BYTE_LEN        = 8;
+
+    public static final int[]POW_2_TO_X =
+            {
+                    1, 2, 4, 8, 16, 32, 64, 128, 256, 512,
+                    1024, 2048, 4096, 8192, 16384, 32768, 65536
+            };
 
     //TODO to BDC conversion
-    public static byte bcd(byte op) {
+    //nie używane w Nes-ie, narazie można odpuścic
+    public static byte bdc(byte op) {
         return op;
+    }
+
+    public static byte high(int b) {
+        int[] binaryArray = getBinaryArray(b, 16);
+        int[] binaryArrayH =  CommonUtils.getPartialArray(binaryArray, HIGH_BYTE_START_INDEX, HIGH_BYTE_END_INDEX + 1);
+        byte highByte = (byte)binaryToDecimal(binaryArrayH);
+
+        return highByte;
+    }
+
+    public static byte low(int b) {
+        int[] binaryArray = getBinaryArray(b, 16);
+        int[] binaryArrayL =  CommonUtils.getPartialArray(binaryArray, LOW_BYTE_START_INDEX, LOW_BYTE_END_INDEX + 1);
+        byte lowByte = (byte)binaryToDecimal(binaryArrayL);
+
+        return lowByte;
     }
 
     public static int combineTwoBytes(byte msb, byte lsb) {
@@ -24,12 +48,13 @@ public final class BinaryMath {
         int result = 0;
         int exp = bcdArray.length - 1;
         for(int i=0; i<bcdArray.length; i++) {
-            result += (bcdArray[i] * Math.pow(2, exp - i));
+            result += (bcdArray[i] * POW_2_TO_X[exp - i]);
         }
 
         return result;
     }
 
+    //TODO rozwiązanie naiwne, do porawy !!!
     public static int[] getBinaryArray(int data, int bitLen) {
         int diff = 0;
         int[] array = new int[bitLen];
@@ -53,6 +78,7 @@ public final class BinaryMath {
         return array;
     }
 
+    //TODO rozwiązanie naiwne, do porawy !!!
     public static int[] getBinaryArray(int data) {
         int diff = 0;
         int[] array = new int[DEFAULT_BYTE_LEN];

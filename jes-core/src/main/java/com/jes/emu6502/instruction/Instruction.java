@@ -8,11 +8,14 @@ import com.jes.emu6502.addressing.AddressingMode;
 public class Instruction {
     private Mnemonic mnemonic;
     private AddressingMode addressingMode;
+    private int parametersNumber;
     private byte[] parameters;
 
-    public Instruction(Mnemonic mnemonic, AddressingMode add, int paramNo) {
-        this.mnemonic = mnemonic;
-        this.parameters = new byte[paramNo];
+    public Instruction(OpCodeConf conf) {
+        this.mnemonic = conf.getMnemonic();
+        this.addressingMode = conf.getAddressingMode();
+        this.parametersNumber = conf.getBytes() - 1;
+        this.parameters = new byte[parametersNumber];
     }
 
     public Mnemonic getMnemonic() {
@@ -37,5 +40,13 @@ public class Instruction {
 
     public void setParameter(int index, byte value) {
         this.parameters[index] = value;
+    }
+
+    public int getParametersNumber() {
+        return parametersNumber;
+    }
+
+    public void setParametersNumber(int parametersNumber) {
+        this.parametersNumber = parametersNumber;
     }
 }

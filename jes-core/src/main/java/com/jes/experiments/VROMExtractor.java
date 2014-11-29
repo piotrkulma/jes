@@ -1,6 +1,7 @@
 package com.jes.experiments;
 
 import com.jes.experiments.Tile;
+import com.jes.utils.BinaryMath;
 import com.jes.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -27,8 +28,8 @@ public class VROMExtractor {
         for(int i=0; i<bank.length; i+=16) {
             Tile tile = new Tile();
             for(int j=0; j<8; j++) {
-                chA = CommonUtils.getBinaryArray(bank[i + j], 8);
-                chB = CommonUtils.getBinaryArray(bank[i + j + 8], 8);
+                chA = BinaryMath.getBinaryArray(bank[i + j], 8);
+                chB = BinaryMath.getBinaryArray(bank[i + j + 8], 8);
 
                 Integer[] cmp = compose(chA, chB);
                 tile.getTile().add(cmp);

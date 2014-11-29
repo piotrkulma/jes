@@ -26,8 +26,7 @@ public class NesFileBuilder {
         LOG.info(MessageFormat.format("LOADING DATA FROM FILE ''{0}''", path));
 
         try {
-            URL resourceURL = ClassLoader.getSystemResource(path);
-            FileInputStream fis = new FileInputStream(new File(resourceURL.getFile()));
+            FileInputStream fis = new FileInputStream(new File(path));
 
             LOG.info("#### FETCHING FILE HEADER");
             fetchHeader(file, fis);

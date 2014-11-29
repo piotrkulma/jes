@@ -9,6 +9,7 @@ import java.text.MessageFormat;
 /**
  * Created by Piotr Kulma on 2014-11-23.
  */
+
 public class AddressingModeValueResolver {
     private Emulator6502 cpu;
 
@@ -16,7 +17,7 @@ public class AddressingModeValueResolver {
         this.cpu = emulator;
     }
 
-    public int resolveValue(AddressingMode mode, byte... attributes) {
+    public int[] resolveValue(AddressingMode mode, byte... attributes) {
         switch(mode) {
             case IMM: return immediate(attributes[0]);
             case AB: return absolute(attributes);
@@ -45,10 +46,10 @@ public class AddressingModeValueResolver {
      * @param offset
      * @return
      */
-    public int relative(byte offset) {
+    public int[] relative(byte offset) {
         int value = (cpu.pc + offset);
 
-        return value;
+        return new int[]{ value };
     }
 
     /**
@@ -56,10 +57,10 @@ public class AddressingModeValueResolver {
      *
      * @return
      */
-    public int accumulator() {
-        int value = cpu.acm;
+    public int[] accumulator() {
+        int value = cpu.accum;
 
-        return value;
+        return new int[]{ value };
     }
 
 
@@ -68,8 +69,8 @@ public class AddressingModeValueResolver {
      *
      * @return nothing
      */
-    public int implied() {
-        return 0;
+    public int[] implied() {
+        return new int[] {};
     }
 
     /**
@@ -84,13 +85,14 @@ public class AddressingModeValueResolver {
      * @param params
      * @return
      */
-    private int absolute(byte[] params) {
+    private int[] absolute(byte[] params) {
         byte lsbAddress = params[0];
         byte msbAddress = params[1];
 
-        int value = cpu.getMemoryCell(BinaryMath.combineTwoBytes(msbAddress, lsbAddress));
+        int address = BinaryMath.combineTwoBytes(msbAddress, lsbAddress);
+        int value = cpu.getMemoryCell(address);
 
-        return value;
+        return new int[] { value, address };
     }
 
     /**
@@ -105,13 +107,15 @@ public class AddressingModeValueResolver {
      * @param params
      * @return
      */
-    public int absoluteX(byte[] params) {
+    public int[] absoluteX(byte[] params) {
         byte lsbAddress = params[0];
         byte msbAddress = params[1];
         int longAddress = cpu.getMemoryCell(BinaryMath.combineTwoBytes(msbAddress, lsbAddress));
 
-        int value = cpu.getMemoryCell(longAddress + cpu.regX);
-        return value;
+        int destAddress = longAddress + cpu.regX;
+        int value = cpu.getMemoryCell(destAddress);
+
+        return new int[] { value, destAddress };
     }
 
     /**
@@ -120,13 +124,15 @@ public class AddressingModeValueResolver {
      * @param params
      * @return
      */
-    public int absoluteY(byte[] params) {
+    public int[] absoluteY(byte[] params) {
         byte lsbAddress = params[0];
         byte msbAddress = params[1];
         int longAddress = cpu.getMemoryCell(BinaryMath.combineTwoBytes(msbAddress, lsbAddress));
 
-        int value = cpu.getMemoryCell(longAddress + cpu.regY);
-        return value;
+        int destAddress = longAddress + cpu.regY;
+        int value = cpu.getMemoryCell(destAddress);
+
+        return new int[] { value, destAddress };
     }
 
     /**
@@ -145,7 +151,7 @@ public class AddressingModeValueResolver {
      * @param param adresses
      * @return
      */
-    private int indirect(byte[] param) {
+    private int[] indirect(byte[] param) {
         byte lsbAddress = cpu.getMemoryCell(param[0]);
         byte msbAddress = cpu.getMemoryCell(param[1]);
 
@@ -154,8 +160,10 @@ public class AddressingModeValueResolver {
         byte lsb = cpu.getMemoryCell(longAddress);
         byte msb = cpu.getMemoryCell(longAddress + 1);
 
-        int value = cpu.getMemoryCell(BinaryMath.combineTwoBytes(msb, lsb));
-        return value;
+        int destAddress = BinaryMath.combineTwoBytes(msb, lsb);
+        int value = cpu.getMemoryCell(destAddress);
+
+        return new int[] { value, destAddress };
     }
 
     /**
@@ -172,14 +180,16 @@ public class AddressingModeValueResolver {
      * @return
      */
 
-    private int indirectX(byte param) {
+    private int[] indirectX(byte param) {
         int address = (byte)(param + cpu.regX);
         byte lsbAddress = cpu.getMemoryCell(address);
         byte msbAddress = cpu.getMemoryCell(address + 1);
 
-        int value = cpu.getMemoryCell(BinaryMath.combineTwoBytes(msbAddress, lsbAddress));
+        int destAddress = BinaryMath.combineTwoBytes(msbAddress, lsbAddress);
 
-        return value;
+        int value = cpu.getMemoryCell(destAddress);
+
+        return new int[] { value, destAddress };
     }
 
     /**
@@ -195,14 +205,16 @@ public class AddressingModeValueResolver {
      * @param param
      * @return
      */
-    private int indirectY(byte param) {
+    private int[] indirectY(byte param) {
         int address = cpu.getMemoryCell(param);
         byte lsbAddress = cpu.getMemoryCell(address);
         byte msbAddress = cpu.getMemoryCell(address + 1);
 
         int longAddress = BinaryMath.combineTwoBytes(msbAddress, lsbAddress) + cpu.regY;
         int value = cpu.getMemoryCell(longAddress);
-        return value;
+
+
+        return new int[] { value, longAddress };
     }
 
     /**
@@ -210,8 +222,8 @@ public class AddressingModeValueResolver {
      *
      * @param val operation value
      */
-    private int immediate(byte val) {
-        return val;
+    private int[] immediate(byte val) {
+        return new int[] { val };
     }
 
     /**
@@ -220,10 +232,10 @@ public class AddressingModeValueResolver {
      *
      * @param zeroPageAddress address in zero page memory map
      */
-    private int zeroPage(byte zeroPageAddress) {
+    private int[] zeroPage(byte zeroPageAddress) {
         byte val = cpu.getMemoryCell(zeroPageAddress);
 
-        return val;
+        return new int[] { val, zeroPageAddress };
     }
 
     /**
@@ -235,12 +247,12 @@ public class AddressingModeValueResolver {
      *
      * @param attr operation parameter
      */
-    private int zeroPageX(byte attr) {
+    private int[] zeroPageX(byte attr) {
         byte address = (byte)(attr + cpu.regX);
 
         int val = cpu.getMemoryCell(address);
 
-        return val;
+        return new int[] { val, address };
     }
 
     /**
@@ -248,11 +260,11 @@ public class AddressingModeValueResolver {
      *
      * @param attr operation attribute
      */
-    private int zeroPageY(byte attr) {
+    private int[] zeroPageY(byte attr) {
         byte address = (byte)(attr + cpu.regY);
 
         int val = cpu.getMemoryCell(address);
 
-        return val;
+        return new int[] { val, address };
     }
 }

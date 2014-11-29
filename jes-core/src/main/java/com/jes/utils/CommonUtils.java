@@ -7,13 +7,6 @@ import org.apache.logging.log4j.Logger;
  * Created by Piotr Kulma on 2014-11-16.
  */
 public final class CommonUtils {
-    public static Logger LOG = LogManager.getLogger(CommonUtils.class);
-
-    public static final int INDEX_OPERATION_CODE    = 0;
-    public static final int INDEX_MNEMONIC          = 1;
-    public static final int INDEX_ADDRESS_MODE      = 2;
-    public static final int INDEX_BYTES_NUMBER      = 3;
-
     public static final String[] HEX_VALUES = {
             "0", "1", "2", "3", "4",
             "5", "6", "7", "8", "9",
@@ -83,6 +76,17 @@ public final class CommonUtils {
         return result;
     }
 
+    public static int[] getPartialArray(int[] array, int beginIndex, int endIndex) {
+        int index = 0;
+        int[] result = new int[endIndex - beginIndex];
+
+        for(int i=beginIndex; i<endIndex; i++) {
+            result[index++] = array[i];
+        }
+
+        return result;
+    }
+
     public static String convertBCDtoHex(byte bcd) {
         int[] bcdArray = BinaryMath.getBinaryArray(bcd, 8);
 
@@ -108,5 +112,19 @@ public final class CommonUtils {
         }
 
         return c;
+    }
+
+    public static boolean isEqualsByContent(int a[], int b[]) {
+        if(a.length == b.length) {
+            for(int i=0; i<a.length; i++) {
+                if(a[i] != b[i]) {
+                    return false;
+                }
+            }
+        } else {
+            return false;
+        }
+
+        return true;
     }
 }
