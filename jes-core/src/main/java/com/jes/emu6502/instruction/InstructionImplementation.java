@@ -2,10 +2,9 @@ package com.jes.emu6502.instruction;
 
 import com.jes.emu6502.Emulator6502;
 import com.jes.utils.BinaryMath;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import static com.jes.emu6502.Emulator6502.SR_INDEX_B;
-import static com.jes.emu6502.Emulator6502.VALUE_CLEAR;
-import static com.jes.emu6502.Emulator6502.VALUE_SET;
 import static com.jes.utils.BinaryMath.bdc;
 import static com.jes.utils.BinaryMath.getBinaryArray;
 
@@ -15,6 +14,13 @@ import static com.jes.utils.BinaryMath.getBinaryArray;
  * Based on http://homepage.ntlworld.com/cyborgsystems/CS_Main/6502/6502.htm#FLG-D
  */
 public class InstructionImplementation {
+    private Logger LOG = LogManager.getLogger(InstructionExecutor.class);
+
+    public static final int VALUE_SET           = 1;
+    public static final int VALUE_CLEAR         = 0;
+
+    public static final int SR_INDEX_B          = 3;
+
     /**
      * zero index in java arrays notation is 7th bit in
      * 6502 notation order
@@ -30,83 +36,83 @@ public class InstructionImplementation {
     }
 
     @InstructionImpl
-    public void adc(byte m) {
-        byte t = (byte)(cpu.accum + m + cpu.sr.C);
+    public void adc(int m) {
+        int t = (cpu.accum + m + cpu.sr.C);
         cpu.sr.V = (getBinaryArray(cpu.accum)[_7] != getBinaryArray(t)[_7]) ? 1 : 0;
         cpu.sr.N = getBinaryArray(t)[_7];
         cpu.sr.Z = (t == 0) ? 1: 0;
         if(cpu.sr.D == 1) {
-            t = (byte)(bdc(cpu.accum) + bdc(m) + cpu.sr.C);
+            t = (bdc(cpu.accum) + bdc(m) + cpu.sr.C);
             cpu.sr.C = (t>99) ? 1:0;
         } else {
             cpu.sr.C = (t > 255) ? 1 : 0;
         }
 
-        cpu.accum = (byte)(t & 0xFF);
+        cpu.accum = (t & 0xFF);
     }
 
     @InstructionImpl
-    public void and(byte m) {
-        cpu.accum = (byte)(cpu.accum & m);
+    public void and(int m) {
+        cpu.accum = (cpu.accum & m);
         cpu.sr.N = getBinaryArray(cpu.accum)[_7];
         cpu.sr.Z = (cpu.accum == 0) ? 1 : 0;
     }
 
     @InstructionImpl
-    public void asl(byte b, int address) {
+    public void asl(int b, int address) {
         cpu.sr.C = getBinaryArray(b)[_7];
-        b = (byte)(b << 1);
+        b = (b << 1);
         cpu.sr.N = getBinaryArray(b)[_7];
         cpu.sr.Z = (b==0) ? 1 : 0;
 
-        cpu.setMemoryCell(address, b);
+        cpu.setMemoryCell(address, (byte)b);
     }
 
     @InstructionImpl
-    public void bcc(byte b) {
+    public void bcc(int b) {
         if(cpu.sr.C == VALUE_CLEAR) {
             cpu.pc = b;
         }
     }
 
     @InstructionImpl
-    public void bcs(byte b) {
+    public void bcs(int b) {
         if(cpu.sr.C == VALUE_SET) {
             cpu.pc = b;
         }
     }
 
     @InstructionImpl
-    public void beq(byte b) {
+    public void beq(int b) {
         if(cpu.sr.Z == VALUE_SET) {
             cpu.pc = b;
         }
     }
 
     @InstructionImpl
-    public void bit(byte b) {
-        byte t = (byte)(cpu.accum & b);
+    public void bit(int b) {
+        int t = (cpu.accum & b);
         cpu.sr.N = getBinaryArray(t)[_7];
         cpu.sr.V = getBinaryArray(t)[_6];
         cpu.sr.Z = (t==0) ? 1 : 0;
     }
 
     @InstructionImpl
-    public void bmi(byte b) {
+    public void bmi(int b) {
         if(cpu.sr.N == VALUE_SET) {
             cpu.pc = b;
         }
     }
 
     @InstructionImpl
-    public void bne(byte b) {
+    public void bne(int b) {
         if(cpu.sr.Z == VALUE_CLEAR) {
             cpu.pc = b;
         }
     }
 
     @InstructionImpl
-    public void bpl(byte b) {
+    public void bpl(int b) {
         if(cpu.sr.N == VALUE_CLEAR) {
             cpu.pc = b;
         }
@@ -118,11 +124,11 @@ public class InstructionImplementation {
 
         //odłuż na stos najbardziej znaczącą część licznika rozkazów
         cpu.setMemoryCell(cpu.sp, BinaryMath.high(cpu.pc));
-        cpu.sp = (byte) (cpu.sp - 1);
+        cpu.sp = (cpu.sp - 1);
 
         //odłuż na stos najmniej znaczącą część licznika rozkazów
         cpu.setMemoryCell(cpu.sp, BinaryMath.low(cpu.pc));
-        cpu.sp = (byte) (cpu.sp - 1);
+        cpu.sp = (cpu.sp - 1);
 
         //odłuż na stos bit statusu ustaw flagę B na stosie
         //nie zmieniając jej w rejestrze procesora
@@ -130,7 +136,7 @@ public class InstructionImplementation {
         sr[SR_INDEX_B] = VALUE_SET;
 
         cpu.setMemoryCell(cpu.sp, (byte)BinaryMath.binaryToDecimal(sr));
-        cpu.sp = (byte) (cpu.sp - 1);
+        cpu.sp = (cpu.sp - 1);
 
         //pobierz adres z wierzchołak stosu 0x FFFF FFFE i ustaw w pc
         int addrL = cpu.getMemoryCell(0xFFFE);
@@ -140,14 +146,14 @@ public class InstructionImplementation {
     }
 
     @InstructionImpl
-    public void bvc(byte b) {
+    public void bvc(int b) {
         if(cpu.sr.V == VALUE_CLEAR) {
             cpu.pc = b;
         }
     }
 
     @InstructionImpl
-    public void bvs(byte b) {
+    public void bvs(int b) {
         if(cpu.sr.V == VALUE_SET) {
             cpu.pc = b;
         }
@@ -174,24 +180,24 @@ public class InstructionImplementation {
     }
 
     @InstructionImpl
-    public void cmp(byte m) {
-        byte test = (byte)(cpu.accum - m);
+    public void cmp(int m) {
+        int test = (cpu.accum - m);
         cpu.sr.N = getBinaryArray(test)[_7];
         cpu.sr.C = (cpu.accum>=m) ? 1 : 0;
         cpu.sr.Z = (test==0) ? 1 : 0;
     }
 
     @InstructionImpl
-    public void cpx(byte m) {
-        byte test = (byte)(cpu.regX - m);
+    public void cpx(int m) {
+        int test = (cpu.regX - m);
         cpu.sr.N = getBinaryArray(test)[_7];
         cpu.sr.C = (cpu.regX>=m) ? 1 : 0;
         cpu.sr.Z = (test==0) ? 1 : 0;
     }
 
     @InstructionImpl
-    public void cpy(byte m) {
-        byte test = (byte)(cpu.regY - m);
+    public void cpy(int m) {
+        int test = (cpu.regY - m);
         cpu.sr.N = getBinaryArray(test)[_7];
         cpu.sr.C = (cpu.regY>=m) ? 1 : 0;
         cpu.sr.Z = (test==0) ? 1 : 0;
@@ -199,18 +205,18 @@ public class InstructionImplementation {
 
     @InstructionImpl
     //decrement memory by one
-    public void dec(byte m, int address) {
-        m = (byte)((m - 1) & 0xFF);
+    public void dec(int m, int address) {
+        m = ((m - 1) & 0xFF);
         cpu.sr.N = getBinaryArray(m)[_7];
         cpu.sr.Z = (m==0) ? 1 : 0;
 
-        cpu.setMemoryCell(address, m);
+        cpu.setMemoryCell(address, (byte)m);
     }
 
     @InstructionImpl
     //decrement x by one
     public void dex() {
-        cpu.regX = (byte)(cpu.regX - 1);
+        cpu.regX = (cpu.regX - 1);
         cpu.sr.Z = (cpu.regX==0) ? 1 : 0;
         cpu.sr.N = getBinaryArray(cpu.regX)[_7];
     }
@@ -218,33 +224,33 @@ public class InstructionImplementation {
     @InstructionImpl
     //decrement y by one
     public void dey() {
-        cpu.regY = (byte)(cpu.regY - 1);
+        cpu.regY = (cpu.regY - 1);
         cpu.sr.Z = (cpu.regY==0) ? 1 : 0;
         cpu.sr.N = getBinaryArray(cpu.regY)[_7];
     }
 
     @InstructionImpl
     //exclusive OR A with memory
-    public void eor(byte m) {
-        cpu.accum = (byte)(cpu.accum ^ m);
+    public void eor(int m) {
+        cpu.accum = (cpu.accum ^ m);
         cpu.sr.N = getBinaryArray(cpu.accum)[_7];
         cpu.sr.Z = (cpu.accum==0) ? 1 : 0;
     }
 
     @InstructionImpl
     //increment memory by one
-    public void inc(byte m, int address) {
-        m = (byte)((m + 1) & 0xFF);
+    public void inc(int m, int address) {
+        m = ((m + 1) & 0xFF);
         cpu.sr.N = getBinaryArray(m)[_7];
         cpu.sr.Z = (m==0) ? 1:0;
 
-        cpu.setMemoryCell(address, m);
+        cpu.setMemoryCell(address, (byte)m);
     }
 
     @InstructionImpl
     //increment x by one
     public void inx() {
-        cpu.regX = (byte)(cpu.regX + 1);
+        cpu.regX = (cpu.regX + 1);
         cpu.sr.Z = (cpu.regX==0) ? 1:0;
         cpu.sr.N = getBinaryArray(cpu.regX)[_7];
     }
@@ -252,7 +258,7 @@ public class InstructionImplementation {
     @InstructionImpl
     //increment y by one
     public void iny() {
-        cpu.regY = (byte)(cpu.regY + 1);
+        cpu.regY = (cpu.regY + 1);
         cpu.sr.Z = (cpu.regY==0) ? 1:0;
         cpu.sr.N = getBinaryArray(cpu.regY)[_7];
     }
@@ -269,17 +275,17 @@ public class InstructionImplementation {
         int test = cpu.pc - 1;
 
         cpu.setMemoryCell(cpu.sp, BinaryMath.high(test));
-        cpu.sp = (byte) (cpu.sp - 1);
+        cpu.sp = (cpu.sp - 1);
 
         cpu.setMemoryCell(cpu.sp, BinaryMath.low(test));
-        cpu.sp = (byte) (cpu.sp - 1);
+        cpu.sp = (cpu.sp - 1);
 
         cpu.pc = b;
     }
 
     @InstructionImpl
     //load A with memory
-    public void lda(byte m) {
+    public void lda(int m) {
         cpu.accum = m;
         cpu.sr.N = getBinaryArray(cpu.accum)[_7];
         cpu.sr.Z = (cpu.accum==0) ? 1 : 0;
@@ -287,7 +293,7 @@ public class InstructionImplementation {
 
     @InstructionImpl
     //load X with memory
-    public void ldx(byte m) {
+    public void ldx(int m) {
         cpu.regX = m;
         cpu.sr.N = getBinaryArray(cpu.regX)[_7];
         cpu.sr.Z = (cpu.regX==0) ? 1 : 0;
@@ -295,7 +301,7 @@ public class InstructionImplementation {
 
     @InstructionImpl
     //load Y with memory
-    public void ldy(byte m) {
+    public void ldy(int m) {
         cpu.regY = m;
         cpu.sr.N = getBinaryArray(cpu.regY)[_7];
         cpu.sr.Z = (cpu.regY==0) ? 1 : 0;
@@ -303,13 +309,13 @@ public class InstructionImplementation {
 
     @InstructionImpl
     //logical shift right
-    public void lsr(byte b, int address) {
+    public void lsr(int b, int address) {
         cpu.sr.N = 0;
         cpu.sr.C = getBinaryArray(b)[_0];
-        b = (byte)((b >> 1) & 0x7F);
+        b = ((b >> 1) & 0x7F);
         cpu.sr.Z = isZero(b);
 
-        cpu.setMemoryCell(address, b);
+        cpu.setMemoryCell(address, (byte)b);
     }
 
     @InstructionImpl
@@ -319,8 +325,8 @@ public class InstructionImplementation {
 
     @InstructionImpl
     //A = A OR M
-    public void ora(byte m) {
-        cpu.accum = (byte)(cpu.accum | m);
+    public void ora(int m) {
+        cpu.accum = (cpu.accum | m);
         cpu.sr.N = getBinaryArray(cpu.accum)[_7];
         cpu.sr.Z = isZero(cpu.accum);
     }
@@ -328,21 +334,21 @@ public class InstructionImplementation {
     @InstructionImpl
     //push A onto stack
     public void pha() {
-        cpu.setMemoryCell(cpu.sp, cpu.accum);
-        cpu.sp = (byte) (cpu.sp - 1);
+        cpu.setMemoryCell(cpu.sp, (byte)cpu.accum);
+        cpu.sp = (cpu.sp - 1);
     }
 
     @InstructionImpl
     //push p (status register) on stack
     public void php() {
         cpu.setMemoryCell(cpu.sp, cpu.getStatusRegister());
-        cpu.sp = (byte) (cpu.sp - 1);
+        cpu.sp = (cpu.sp - 1);
     }
 
     @InstructionImpl
     //pull from stack to A
     public void pla() {
-        cpu.sp = (byte)(cpu.sp + 1);
+        cpu.sp = (cpu.sp + 1);
         cpu.accum = cpu.getMemoryCell(cpu.sp);
         cpu.sr.N = getBinaryArray(cpu.accum)[_7];
         cpu.sr.Z = isZero(cpu.accum);
@@ -351,48 +357,48 @@ public class InstructionImplementation {
     @InstructionImpl
     //pull from stack to p (status register)
     public void plp() {
-        cpu.sp = (byte)(cpu.sp + 1);
+        cpu.sp = (cpu.sp + 1);
         byte val = cpu.getMemoryCell(cpu.sp);
         cpu.setStatusRegister(val);
     }
 
     @InstructionImpl
     //rotate left
-    public void rol(byte b, int address) {
+    public void rol(int b, int address) {
         int test = getBinaryArray(b)[_7];
-        b = (byte)((b << 1) & 0xFE);
-        b = (byte)(b | cpu.sr.C);
+        b = ((b << 1) & 0xFE);
+        b = (b | cpu.sr.C);
         cpu.sr.C = test;
         cpu.sr.Z = isZero(b);
         cpu.sr.N = getBinaryArray(b)[_7];
 
-        cpu.setMemoryCell(address, b);
+        cpu.setMemoryCell(address, (byte)b);
     }
 
     @InstructionImpl
     //rotate right
-    public void ror(byte b, int address) {
+    public void ror(int b, int address) {
         int test = getBinaryArray(b)[_0];
-        b = (byte)((b >> 1) & 0x7F);
-        b = (byte)(b | ((cpu.sr.C  == 1) ? 0x80 : 0x00));
+        b = ((b >> 1) & 0x7F);
+        b = (b | ((cpu.sr.C  == 1) ? 0x80 : 0x00));
         cpu.sr.C = (byte) test;
         cpu.sr.Z = isZero(b);
         cpu.sr.N = getBinaryArray(b)[_7];
 
-        cpu.setMemoryCell(address, b);
+        cpu.setMemoryCell(address, (byte)b);
     }
 
     @InstructionImpl
     //return from interrupt
     public void rti() {
-        cpu.sp = (byte)(cpu.sp - 1);
+        cpu.sp = (cpu.sp - 1);
         byte sr = cpu.getMemoryCell(cpu.sp);
         cpu.setStatusRegister(sr);
 
-        cpu.sp = (byte)(cpu.sp - 1);
+        cpu.sp = (cpu.sp - 1);
         int l = cpu.getMemoryCell(cpu.sp);
 
-        cpu.sp = (byte)(cpu.sp - 1);
+        cpu.sp = (cpu.sp - 1);
         int h = cpu.getMemoryCell(cpu.sp) << 8;
 
         cpu.pc = (h | l);
@@ -401,10 +407,10 @@ public class InstructionImplementation {
     @InstructionImpl
     //return from subroutine
     public void rts() {
-        cpu.sp = (byte)(cpu.sp + 1);
+        cpu.sp = (cpu.sp + 1);
         int l = cpu.getMemoryCell(cpu.sp);
 
-        cpu.sp = (byte)(cpu.sp + 1);
+        cpu.sp = (cpu.sp + 1);
         int h = cpu.getMemoryCell(cpu.sp) << 8;
 
         cpu.pc = (h | l) + 1;
@@ -412,20 +418,20 @@ public class InstructionImplementation {
 
     @InstructionImpl
     //subtract memory from A with borrow
-    public void sbc(byte m) {
+    public void sbc(int m) {
         int test;
         if(cpu.sr.D == 1) {
-            test = (byte)(BinaryMath.bdc(cpu.accum) - BinaryMath.bdc(m) - (cpu.sr.C==1?0:1));
+            test = (BinaryMath.bdc(cpu.accum) - BinaryMath.bdc(m) - (cpu.sr.C==1?0:1));
             cpu.sr.V = (test > 99 || test < 0) ? 1 : 0;
         } else {
-            test = (byte)(cpu.accum - m - (cpu.sr.C==1?0:1));
+            test = (cpu.accum - m - (cpu.sr.C==1?0:1));
             cpu.sr.V = (test > 127 || test < -128) ? 1 : 0;
         }
 
         cpu.sr.C = (test>=0) ? 1:0;
         cpu.sr.N = getBinaryArray(test)[_7];
         cpu.sr.Z = isZero(test);
-        cpu.accum = (byte)(test & 0xFF);
+        cpu.accum = (test & 0xFF);
     }
 
     @InstructionImpl
@@ -448,20 +454,20 @@ public class InstructionImplementation {
 
     @InstructionImpl
     //store A in memory
-    public void sta(byte m) {
-        cpu.setMemoryCell(m, cpu.accum);
+    public void sta(int m) {
+        cpu.setMemoryCell(m, (byte)cpu.accum);
     }
 
 
     @InstructionImpl  //store X in memory
-    public void stx(byte m) {
-        cpu.setMemoryCell(m, cpu.regX);
+    public void stx(int m) {
+        cpu.setMemoryCell(m, (byte)cpu.regX);
     }
 
     @InstructionImpl
     //store Y in memory
-    public void sty(byte m) {
-        cpu.setMemoryCell(m, cpu.regY);
+    public void sty(int m) {
+        cpu.setMemoryCell(m, (byte)cpu.regY);
     }
 
     @InstructionImpl
@@ -508,10 +514,6 @@ public class InstructionImplementation {
         cpu.accum = cpu.regY;
         cpu.sr.N = getBinaryArray(cpu.accum)[_7];
         cpu.sr.Z = isZero(cpu.accum);
-    }
-
-    private int isZero(byte b) {
-        return (b==0) ? 1 : 0;
     }
 
     private int isZero(int b) {

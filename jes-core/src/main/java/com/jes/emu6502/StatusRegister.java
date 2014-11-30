@@ -18,4 +18,27 @@ public class StatusRegister {
     public int Z = 0;
     //carry flag
     public int C = 0;
+
+    @Override
+    public String toString() {
+        StringBuffer stringBuff = new StringBuffer("");
+
+        stringBuff.append("SR=[ ");
+        stringBuff.append(" N: ");
+        stringBuff.append(N);
+        stringBuff.append(", V: ");
+        stringBuff.append(V);
+        stringBuff.append(", B: ");
+        stringBuff.append(B);
+        stringBuff.append(", D: ");
+        stringBuff.append(D);
+        stringBuff.append(", I: ");
+        stringBuff.append(I);
+        stringBuff.append(", Z: ");
+        stringBuff.append(Z);
+        stringBuff.append(", C: ");
+        stringBuff.append(C);
+        stringBuff.append(" ] ");
+        return stringBuff.toString();
+    }
 }

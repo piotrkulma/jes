@@ -4,7 +4,7 @@ package com.jes;
  * Created by Piotr Kulma on 2014-11-22.
  */
 public class Configuration {
-    public static final String TEST_PROGRAM_MEMORY_DUMP_PATH    = "memory.txt";
+    public static final String TEST_PROGRAM_MEMORY_DUMP_PATH    = "/memory.txt";
     public static final String TEST_OPERATION_CODE_SAVING_PATH  = "op_codes.conf";
     public static final String TEST_ROM_PATH                    = "smb.nes";
 

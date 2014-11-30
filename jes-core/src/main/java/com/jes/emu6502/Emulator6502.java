@@ -16,6 +16,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,26 +26,13 @@ import java.util.Map;
 public class Emulator6502 {
     public static Logger LOG = LogManager.getLogger(Emulator6502.class);
 
-
-    public static final int INDEX_OPERATION_CODE    = 0;
-    public static final int INDEX_MNEMONIC          = 1;
-    public static final int INDEX_ADDRESS_MODE      = 2;
-    public static final int INDEX_BYTES_NUMBER      = 3;
-    public static final int INDEX_CYCLES_NUMBER     = 4;
-
-
-    public static final int CPU_MEMORY_SIZE     = 0x10000;
-
-    public static final int SR_INDEX_B          = 3;
-
-    public static final int VALUE_SET           = 1;
-    public static final int VALUE_CLEAR         = 0;
+    public static final int CPU_MEMORY_SIZE         = 0x10000;
 
     public int pc;//16-bit;
-    public byte accum;
-    public byte regX;
-    public byte regY;
-    public byte sp;
+    public int accum;
+    public int regX;
+    public int regY;
+    public int sp;
     public StatusRegister sr;
 
     private byte[] memoryMap;
@@ -54,29 +42,14 @@ public class Emulator6502 {
     private InstructionExecutor instructionExecutor;
     private AddressingModeValueResolver addressingResolver;
 
-    public Emulator6502() {
-        try {
-            loadOpCodesData();
-            initializeCpu();
+    public Emulator6502() throws Exception{
+        loadOpCodesData();
+        initializeCpu();
 
-            memoryMap = new byte[CPU_MEMORY_SIZE];
+        memoryMap = new byte[CPU_MEMORY_SIZE];
 
-            instructionExecutor = new InstructionExecutor(this);
-            addressingResolver = new AddressingModeValueResolver(this);
-        }catch(Exception e) {
-            LOG.error("", e);
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void runEmulation() {
-        try {
-            Instruction instr = getActualInstruction();
-            int[] parameters = addressingResolver.resolveValue(instr.getAddressingMode(), instr.getParameters());
-            instructionExecutor.executeOperation(instr.getMnemonic(), parameters);
-        } catch (Exception e) {
-            LOG.error("", e);
-        }
+        instructionExecutor = new InstructionExecutor(this);
+        addressingResolver = new AddressingModeValueResolver(this);
     }
 
     public void setMemoryCell(int address, byte value) {
@@ -111,10 +84,60 @@ public class Emulator6502 {
         sr.C = array[7];
     }
 
-    private Instruction getActualInstruction() {
+    public void runEmulation() throws Exception{
+        Instruction instr;
+        int[] parameters;
+        while (true) {
+            LOG.info(MessageFormat.format("Actual line: 0x{0} ({1})", CommonUtils.convertBCDtoHex(pc), pc));
+            instr = nextInstruction();
+            LOG.info(instr);
+
+            parameters = addressingResolver.resolveValue(instr.getAddressingMode(), instr.getParameters());
+
+            if (parameters.length == 1) {
+                LOG.info(MessageFormat.format("Resolved parameters v:0x{0} ", CommonUtils.convertBCDtoHex(parameters[0])));
+            } else if (parameters.length == 2) {
+                LOG.info(MessageFormat.format("Resolved parameters v:0x{0} a:0x{1} ",
+                        CommonUtils.convertBCDtoHex(parameters[0]),
+                        CommonUtils.convertBCDtoHex(parameters[1])));
+            }
+
+            instructionExecutor.executeOperation(instr.getMnemonic(), parameters);
+
+            LOG.info(this);
+            Thread.sleep(1000);
+
+            LOG.info("##########");
+        }
+    }
+
+    @Override
+    public String toString() {
+        StringBuffer stringBuff = new StringBuffer("");
+
+        stringBuff.append("Emulator6502=[ ");
+        stringBuff.append(sr);
+        stringBuff.append(", PC: ");
+        stringBuff.append(pc);
+        stringBuff.append(", SP: ");
+        stringBuff.append(sp);
+        stringBuff.append(", A: ");
+        stringBuff.append(accum);
+        stringBuff.append(", X: ");
+        stringBuff.append(regX);
+        stringBuff.append(", Y: ");
+        stringBuff.append(regY);
+        stringBuff.append(" ] ");
+        return stringBuff.toString();
+    }
+
+    private Instruction nextInstruction() {
         Instruction instr = null;
 
         String operationCode = CommonUtils.convertBCDtoHex(memoryMap[pc++]);
+        StringBuffer buffer = new StringBuffer("Raw code: ");
+        buffer.append(operationCode);
+        buffer.append(" ");
         if(operationCodeConfMap.containsKey(operationCode)) {
             OpCodeConf conf = operationCodeConfMap.get(operationCode);
             instr = new Instruction(conf);
@@ -122,10 +145,13 @@ public class Emulator6502 {
             if (instr.getParametersNumber()> 0) {
                 for (int j = 0; j < instr.getParametersNumber(); j++) {
                     instr.setParameter(j, memoryMap[pc++]);
+                    buffer.append(CommonUtils.convertBCDtoHex(BinaryMath.byteToIntCorrection(memoryMap[pc - 1])));
+                    buffer.append(" ");
                 }
             }
         }
 
+        LOG.info(buffer.toString());
         return instr;
     }
 
@@ -138,14 +164,9 @@ public class Emulator6502 {
         while((line = reader.readLine()) != null) {
             String array[] = line.split(",");
 
-            OpCodeConf conf = new OpCodeConf(
-                    array[INDEX_OPERATION_CODE],
-                    Mnemonic.valueOf(array[INDEX_MNEMONIC]),
-                    AddressingMode.valueOf(array[INDEX_ADDRESS_MODE]),
-                    Integer.parseInt(array[INDEX_BYTES_NUMBER]),
-                    array[INDEX_CYCLES_NUMBER]);
+            OpCodeConf conf = new OpCodeConf(array);
 
-            operationCodeConfMap.put(array[INDEX_OPERATION_CODE], conf);
+            operationCodeConfMap.put(array[OpCodeConf.INDEX_OPERATION_CODE], conf);
         }
 
         reader.readLine();

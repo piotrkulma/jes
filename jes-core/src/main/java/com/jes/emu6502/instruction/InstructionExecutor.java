@@ -1,6 +1,7 @@
 package com.jes.emu6502.instruction;
 
 import com.jes.emu6502.Emulator6502;
+import com.jes.utils.BinaryMath;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -43,9 +44,9 @@ public class InstructionExecutor {
         if(parameters == 0) {
             method.invoke(instruction);
         } else if(parameters == 1) {
-            method.invoke(instruction, (byte)p[0]);
+            method.invoke(instruction, BinaryMath.byteToIntCorrection(p[0]));
         } else if(parameters == 2){
-            method.invoke(instruction, (byte)p[0], p[1]);
+            method.invoke(instruction, BinaryMath.byteToIntCorrection(p[0]), BinaryMath.byteToIntCorrection(p[1]));
         } else {
             throw new RuntimeException("Too much method parameters");
         }

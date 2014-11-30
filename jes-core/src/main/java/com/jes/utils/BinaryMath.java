@@ -23,6 +23,10 @@ public final class BinaryMath {
         return op;
     }
 
+    public static int bdc(int op) {
+        return op;
+    }
+
     public static byte high(int b) {
         int[] binaryArray = getBinaryArray(b, 16);
         int[] binaryArrayH =  CommonUtils.getPartialArray(binaryArray, HIGH_BYTE_START_INDEX, HIGH_BYTE_END_INDEX + 1);
@@ -54,21 +58,26 @@ public final class BinaryMath {
         return result;
     }
 
-    //TODO rozwiązanie naiwne, do porawy !!!
-    public static int[] getBinaryArray(int data, int bitLen) {
-        int diff = 0;
-        int[] array = new int[bitLen];
-
+    public static int byteToIntCorrection(int data) {
         if(data < 0) {
             data = data + 256;
         }
+
+        return data;
+    }
+
+    public static int[] getBinaryArray(int data, int bitLen) {
+        int diff;
+        int[] array = new int[bitLen];
+
+        data = byteToIntCorrection(data);
 
         String bin = Integer.toBinaryString(data);
 
         diff = bitLen - bin.length();
 
         if(diff > 0) {
-            bin = CommonUtils.addZerosBefore(bin, diff);
+            bin = addZerosBefore(bin, diff);
         }
 
         for(int i=0; i<bin.length(); i++) {
@@ -78,27 +87,15 @@ public final class BinaryMath {
         return array;
     }
 
-    //TODO rozwiązanie naiwne, do porawy !!!
     public static int[] getBinaryArray(int data) {
-        int diff = 0;
-        int[] array = new int[DEFAULT_BYTE_LEN];
+        return getBinaryArray(data, DEFAULT_BYTE_LEN);
+    }
 
-        if(data < 0) {
-            data = data + 256;
+    private static String addZerosBefore(String s, int zeros) {
+        for(int i=0; i<zeros; i++) {
+            s = "0" + s;
         }
 
-        String bin = Integer.toBinaryString(data);
-
-        diff = DEFAULT_BYTE_LEN - bin.length();
-
-        if(diff > 0) {
-            bin = CommonUtils.addZerosBefore(bin, diff);
-        }
-
-        for(int i=0; i<bin.length(); i++) {
-            array[i] = (bin.charAt(i) - 48);
-        }
-
-        return array;
+        return s;
     }
 }

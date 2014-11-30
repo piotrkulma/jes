@@ -13,14 +13,6 @@ public final class CommonUtils {
             "A", "B", "C", "D", "E",
             "F"};
 
-    public static String addZerosBefore(String s, int zeros) {
-        for(int i=0; i<zeros; i++) {
-            s = "0" + s;
-        }
-
-        return s;
-    }
-
     public static String byteArrayToString(byte array[]) {
         String data = "[";
 
@@ -98,6 +90,10 @@ public final class CommonUtils {
         builder.append(HEX_VALUES[lower]);
 
         return builder.toString();
+    }
+
+    public static String convertBCDtoHex(int bcd) {
+        return Integer.toHexString(bcd);
     }
 
     public static int[] combineTwoArrays(int[] a, int b[]) {

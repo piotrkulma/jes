@@ -3,6 +3,8 @@ package com.jes.emu6502.addressing;
 import com.jes.emu6502.Emulator6502;
 import com.jes.emu6502.addressing.AddressingMode;
 import com.jes.utils.BinaryMath;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.text.MessageFormat;
 
@@ -11,6 +13,8 @@ import java.text.MessageFormat;
  */
 
 public class AddressingModeValueResolver {
+    private Logger LOG = LogManager.getLogger(AddressingModeValueResolver.class);
+
     private Emulator6502 cpu;
 
     public AddressingModeValueResolver(Emulator6502 emulator) {
@@ -70,6 +74,7 @@ public class AddressingModeValueResolver {
      * @return nothing
      */
     public int[] implied() {
+
         return new int[] {};
     }
 

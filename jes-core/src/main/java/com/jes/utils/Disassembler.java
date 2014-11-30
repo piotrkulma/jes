@@ -1,8 +1,7 @@
 package com.jes.utils;
 
 import com.jes.Configuration;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import com.jes.emu6502.instruction.OpCodeConf;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -17,8 +16,6 @@ import java.util.Map;
  * Created by Piotr Kulma on 2014-11-22.
  */
 public class Disassembler {
-    public static Logger LOG = LogManager.getLogger(Disassembler.class);
-
     private Map<String, String> mnemonics;
     private Map<String, Integer> bytesNumber;
     public Disassembler() {
@@ -61,8 +58,8 @@ public class Disassembler {
         bytesNumber = new HashMap<String, Integer>();
         while((line = reader.readLine()) != null) {
             String array[] = line.split(",");
-            mnemonics.put(array[CommonUtils.INDEX_OPERATION_CODE], array[CommonUtils.INDEX_MNEMONIC]);
-            bytesNumber.put(array[CommonUtils.INDEX_OPERATION_CODE], Integer.parseInt(array[CommonUtils.INDEX_BYTES_NUMBER]));
+            mnemonics.put(array[OpCodeConf.INDEX_OPERATION_CODE], array[OpCodeConf.INDEX_MNEMONIC]);
+            bytesNumber.put(array[OpCodeConf.INDEX_OPERATION_CODE], Integer.parseInt(array[OpCodeConf.INDEX_BYTES_NUMBER]));
         }
 
         reader.readLine();

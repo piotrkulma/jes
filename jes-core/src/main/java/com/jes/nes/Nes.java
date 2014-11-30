@@ -1,6 +1,6 @@
 package com.jes.nes;
 
-import com.jes.emu6502.Emulator6502;
+import com.jes.emu6502.Emulator2A03;
 import com.jes.nesfile.NESFile;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,7 +26,7 @@ public class Nes {
 
     private byte[] ppuMemoryMap;
 
-    private Emulator6502 cpu;
+    private Emulator2A03 cpu;
 
     public Nes(NESFile nesFile) {
         initialize();
@@ -43,13 +43,13 @@ public class Nes {
     }
 
     //TODO do usunięcia, bo to wyrywanie flaków
-    public Emulator6502 getCpu() {
+    public Emulator2A03 getCpu() {
         return cpu;
     }
 
     private void initialize() {
         ppuMemoryMap = new byte[PPU_MEMORY_SIZE];
-        cpu = new Emulator6502();
+        cpu = new Emulator2A03();
     }
 
     private void loadData(NESFile nesFile) {
