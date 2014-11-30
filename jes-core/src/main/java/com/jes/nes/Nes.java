@@ -28,13 +28,13 @@ public class Nes {
 
     private Emulator2A03 cpu;
 
-    public Nes(NESFile nesFile) {
+    public Nes(NESFile nesFile) throws Exception {
         initialize();
 
         loadData(nesFile);
     }
 
-    public void runNesEmulation() {
+    public void runNesEmulation() throws Exception {
         cpu.runEmulation();
     }
 
@@ -42,12 +42,7 @@ public class Nes {
         return ppuMemoryMap;
     }
 
-    //TODO do usunięcia, bo to wyrywanie flaków
-    public Emulator2A03 getCpu() {
-        return cpu;
-    }
-
-    private void initialize() {
+    private void initialize() throws Exception {
         ppuMemoryMap = new byte[PPU_MEMORY_SIZE];
         cpu = new Emulator2A03();
     }
@@ -61,10 +56,10 @@ public class Nes {
 
         copyROMIntoCPUMemory(romBank, romBanks);
 
-        copyVROMIntoCPUMemory(vRomBank, ramBanks);
+        copyROMIntoPPUMemory(vRomBank, ramBanks);
     }
 
-    private void copyVROMIntoCPUMemory(byte[][] romBank, int romBanks) {
+    private void copyROMIntoPPUMemory(byte[][] romBank, int romBanks) {
         int index = 0;
 
         for(int i=PPU_PATTERN_TABLES_BEGIN_ADDR; i<PPU_PATTERN_TABLES_END_ADDR; i++) {
