@@ -110,7 +110,7 @@ public final class CommonUtils {
         return c;
     }
 
-    public static boolean isEqualsByContent(int a[], int b[]) {
+    public static boolean isArraysEqualByContent(int a[], int b[]) {
         if(a.length == b.length) {
             for(int i=0; i<a.length; i++) {
                 if(a[i] != b[i]) {

@@ -1,5 +1,6 @@
 package com.jes.nes;
 
+import com.jes.emu2C02.Emulator2C02;
 import com.jes.emu6502.Emulator2A03;
 import com.jes.nesfile.NESFile;
 import org.apache.logging.log4j.LogManager;
@@ -13,20 +14,18 @@ import java.text.MessageFormat;
 public class Nes {
     public static Logger LOG = LogManager.getLogger(Nes.class);
 
-    public static final int PPU_MEMORY_SIZE = 0x10000;
+    public static final int PPU_PATTERN_TABLES_BEGIN_ADDR   = 0x0000;
+    public static final int PPU_PATTERN_TABLES_END_ADDR     = 0x2000;
 
-    public static final int PPU_PATTERN_TABLES_BEGIN_ADDR = 0x0000;
-    public static final int PPU_PATTERN_TABLES_END_ADDR = 0x2000;
+    public static final int CPU_ROM_UPPER_BANK_START_ADDR   = 0xC000;
+    public static final int CPU_ROM_UPPER_BANK_END_ADDR     = 0x10000;
 
-    public static final int CPU_ROM_UPPER_BANK_START_ADDR = 0xC000;
-    public static final int CPU_ROM_UPPER_BANK_END_ADDR = 0x10000;
+    public static final int CPU_ROM_LOWER_BANK_START_ADDR   = 0x8000;
+    public static final int CPU_ROM_LOWER_BANK_END_ADDR     = 0xC000;
 
-    public static final int CPU_ROM_LOWER_BANK_START_ADDR = 0x8000;
-    public static final int CPU_ROM_LOWER_BANK_END_ADDR = 0xC000;
-
-    private byte[] ppuMemoryMap;
-
+    private MemoryAccessObserver memory;
     private Emulator2A03 cpu;
+    private Emulator2C02 ppu;
 
     public Nes(NESFile nesFile) throws Exception {
         initialize();
@@ -38,32 +37,38 @@ public class Nes {
         cpu.runEmulation();
     }
 
-    public byte[] getPpuMemoryMap() {
-        return ppuMemoryMap;
+    private void initialize() throws Exception {
+        memory = new MemoryAccessObserver();
+
+        cpu = new Emulator2A03(memory);
+        ppu = new Emulator2C02(memory);
     }
 
-    private void initialize() throws Exception {
-        ppuMemoryMap = new byte[PPU_MEMORY_SIZE];
-        cpu = new Emulator2A03();
+    public Emulator2A03 getCpu() {
+        return cpu;
+    }
+
+    public Emulator2C02 getPpu() {
+        return ppu;
     }
 
     private void loadData(NESFile nesFile) {
         int romBanks = nesFile.getHeader().getRomBanks();
-        int ramBanks = nesFile.getHeader().getRamBanks();
+        //int ramBanks = nesFile.getHeader().getRamBanks();
 
         byte[][] romBank = nesFile.getRomBankData();
         byte[][] vRomBank = nesFile.getvRomBankData();
 
         copyROMIntoCPUMemory(romBank, romBanks);
 
-        copyROMIntoPPUMemory(vRomBank, ramBanks);
+        copyROMIntoPPUMemory(vRomBank);
     }
 
-    private void copyROMIntoPPUMemory(byte[][] romBank, int romBanks) {
+    private void copyROMIntoPPUMemory(byte[][] romBank) {
         int index = 0;
 
         for(int i=PPU_PATTERN_TABLES_BEGIN_ADDR; i<PPU_PATTERN_TABLES_END_ADDR; i++) {
-            ppuMemoryMap[i] = romBank[0][index++];
+            ppu.setMemoryCell(i, romBank[0][index++]);
         }
         LOG.info(MessageFormat.format("Loaded Pattern Tables Bank ({0}-{1})",
                 PPU_PATTERN_TABLES_BEGIN_ADDR,

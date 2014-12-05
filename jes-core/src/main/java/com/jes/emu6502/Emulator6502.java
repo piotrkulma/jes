@@ -1,11 +1,9 @@
 package com.jes.emu6502;
 
 import com.jes.Configuration;
-import com.jes.emu6502.addressing.AddressingMode;
 import com.jes.emu6502.addressing.AddressingModeValueResolver;
 import com.jes.emu6502.instruction.Instruction;
 import com.jes.emu6502.instruction.InstructionExecutor;
-import com.jes.emu6502.instruction.Mnemonic;
 import com.jes.emu6502.instruction.OpCodeConf;
 import com.jes.utils.BinaryMath;
 import com.jes.utils.CommonUtils;
@@ -21,6 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * MOS 6502 emulation
+ *
  * Created by Piotr Kulma on 2014-11-20.
  */
 public class Emulator6502 {
@@ -28,7 +28,7 @@ public class Emulator6502 {
 
     public static final int CPU_MEMORY_SIZE         = 0x10000;
 
-    public int pc;//16-bit;
+    public int pc;
     public int accum;
     public int regX;
     public int regY;
@@ -37,22 +37,21 @@ public class Emulator6502 {
 
     private byte[] memoryMap;
 
-    private Map<String, OpCodeConf> operationCodeConfMap;
+    private Map<String, OpCodeConf> operationCodeMap;
 
     private InstructionExecutor instructionExecutor;
     private AddressingModeValueResolver addressingResolver;
 
     public Emulator6502() throws Exception{
-        loadOpCodesData();
-        initializeCpu();
-
-        memoryMap = new byte[CPU_MEMORY_SIZE];
+        initializeOperationCodeMap();
+        initializeRegisters();
+        initializeMemoryMap();
 
         instructionExecutor = new InstructionExecutor(this);
         addressingResolver = new AddressingModeValueResolver(this);
     }
 
-    public void setMemoryCell(int address, byte value) {
+   public void setMemoryCell(int address, byte value) {
         memoryMap[address] = value;
     }
 
@@ -138,8 +137,8 @@ public class Emulator6502 {
         StringBuffer buffer = new StringBuffer("Raw code: ");
         buffer.append(operationCode);
         buffer.append(" ");
-        if(operationCodeConfMap.containsKey(operationCode)) {
-            OpCodeConf conf = operationCodeConfMap.get(operationCode);
+        if(operationCodeMap.containsKey(operationCode)) {
+            OpCodeConf conf = operationCodeMap.get(operationCode);
             instr = new Instruction(conf);
 
             if (instr.getParametersNumber()> 0) {
@@ -155,24 +154,32 @@ public class Emulator6502 {
         return instr;
     }
 
-    private void loadOpCodesData() throws Exception{
+    private void initializeOperationCodeMap() throws Exception{
         String line;
         URL resourceURL = ClassLoader.getSystemResource(Configuration.OPERATION_CODE_CONFIG_PATH);
         BufferedReader reader = new BufferedReader(new FileReader(new File(resourceURL.getFile())));
 
-        operationCodeConfMap = new HashMap<String, OpCodeConf>();
+        operationCodeMap = new HashMap<String, OpCodeConf>();
         while((line = reader.readLine()) != null) {
             String array[] = line.split(",");
 
             OpCodeConf conf = new OpCodeConf(array);
 
-            operationCodeConfMap.put(array[OpCodeConf.INDEX_OPERATION_CODE], conf);
+            operationCodeMap.put(array[OpCodeConf.INDEX_OPERATION_CODE], conf);
         }
 
         reader.readLine();
     }
 
-    private void initializeCpu() {
+    private void initializeMemoryMap() {
+        memoryMap = new byte[CPU_MEMORY_SIZE];
+
+        for(int i=0; i<CPU_MEMORY_SIZE; i++) {
+            memoryMap[i] = 0;
+        }
+    }
+
+    private void initializeRegisters() {
         pc = 32768;
         accum = 0;
         regX = 0;
