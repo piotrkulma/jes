@@ -57,37 +57,11 @@ public class Emulator6502 {
         memoryMap[BinaryMath.byteToIntCorrection(address)] = value;
     }
 
-    public byte getMemoryCell(int address) {
+   public byte getMemoryCell(int address) {
         return memoryMap[BinaryMath.byteToIntCorrection(address)];
     }
 
-    public byte getStatusRegister() {
-        int[] array = {sr.N, sr.V, 1, sr.B, sr.D, sr.I, sr.Z, sr.C};
-
-        return (byte)BinaryMath.binaryToDecimal(array);
-    }
-
-    public int[] getStatusRegisterArray() {
-        int[] array = {sr.N, sr.V, 1, sr.B, sr.D, sr.I, sr.Z, sr.C};
-
-        return array;
-    }
-
-    public void setStatusRegister(byte b) {
-        int[] array = BinaryMath.getBinaryArray(b);
-        sr.N = array[0];
-        sr.V = array[1];
-        //none = array[2];
-
-        //b pozostaje nie zmienione
-        //sr.B = array[3];
-        sr.D = array[4];
-        sr.I = array[5];
-        sr.Z = array[6];
-        sr.C = array[7];
-    }
-
-    public void interrupt(InterruptType interrupt) throws Exception {
+   public void interrupt(InterruptType interrupt) throws Exception {
         Instruction instr = new Instruction();
         instr.setMnemonic(Mnemonic.NMI);
         switch (interrupt) {
@@ -192,7 +166,7 @@ public class Emulator6502 {
         stringBuff.append(", Y: ");
         stringBuff.append(regY);
         stringBuff.append(", SR:");
-        stringBuff.append(Integer.toHexString(BinaryMath.byteToIntCorrection(getStatusRegister())).toUpperCase());
+        stringBuff.append(Integer.toHexString(BinaryMath.byteToIntCorrection(sr.getStatusRegister())).toUpperCase());
         stringBuff.append(", ");
         stringBuff.append(sr);
         stringBuff.append(" ] ");

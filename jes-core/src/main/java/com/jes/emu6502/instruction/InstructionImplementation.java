@@ -133,7 +133,7 @@ public class InstructionImplementation {
 
         //odłuż na stos bit statusu ustaw flagę B na stosie
         //nie zmieniając jej w rejestrze procesora
-        int[] sr = cpu.getStatusRegisterArray();
+        int[] sr = cpu.sr.getStatusRegisterArray();
         sr[SR_INDEX_B] = VALUE_SET;
 
         cpu.setMemoryCell(cpu.sp, (byte)BinaryMath.binaryToDecimal(sr));
@@ -166,7 +166,7 @@ public class InstructionImplementation {
         cpu.sp = (cpu.sp - 1);
 
         //odłuż na stos bit statusu
-        int[] sr = cpu.getStatusRegisterArray();
+        int[] sr = cpu.sr.getStatusRegisterArray();
 
         cpu.setMemoryCell(cpu.sp, (byte)BinaryMath.binaryToDecimal(sr));
         cpu.sp = (cpu.sp - 1);
@@ -378,7 +378,7 @@ public class InstructionImplementation {
     @InstructionImpl
     //push p (status register) on stack
     public void php() {
-        cpu.setMemoryCell(cpu.sp, cpu.getStatusRegister());
+        cpu.setMemoryCell(cpu.sp, cpu.sr.getStatusRegister());
         cpu.sp = (cpu.sp - 1);
     }
 
@@ -396,7 +396,7 @@ public class InstructionImplementation {
     public void plp() {
         cpu.sp = (cpu.sp + 1);
         byte val = cpu.getMemoryCell(cpu.sp);
-        cpu.setStatusRegister(val);
+        cpu.sr.setStatusRegister(val);
     }
 
     @InstructionImpl
@@ -430,7 +430,7 @@ public class InstructionImplementation {
     public void rti() {
         cpu.sp = (cpu.sp + 1);
         byte sr = cpu.getMemoryCell(cpu.sp);
-        cpu.setStatusRegister(sr);
+        cpu.sr.setStatusRegister(sr);
 
         cpu.sp = (cpu.sp + 1);
         int l = cpu.getMemoryCell(cpu.sp);
