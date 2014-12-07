@@ -18,7 +18,7 @@ public class Emulator2C02 {
 
 
     public static final int MEMORY_SIZE                         = 0x10000;
-    public static final int SPRITE_RAM_SIZE                     = 0x10000;
+    public static final int SPRITE_RAM_SIZE                     = 256;
 
     private byte[] memoryMap;
     private byte[] spriteRam;
@@ -43,14 +43,20 @@ public class Emulator2C02 {
 
     public void setMemoryCell(int address, byte value) {
         address = getAddress(address);
-        memoryObserver.notifySetPPUMemory(address, value);
+
+        memoryObserver.notifyToCPUMemory(address, value);
         memoryMap[address] = value;
     }
 
     public byte getMemoryCell(int address) {
         address = getAddress(address);
-        memoryObserver.notifyGetPPUMemory(address);
+
         return memoryMap[address];
+    }
+
+    public void modifyMemoryWithoutObserver(int address, byte value) {
+        address = getAddress(address);
+        memoryMap[address] = value;
     }
 
     private void initializeMemoryMap() {

@@ -64,7 +64,7 @@ public class AddressingModeValueResolver {
     public int[] accumulator() {
         int value = cpu.accum;
 
-        return new int[]{ value };
+        return new int[]{ value, value };
     }
 
 

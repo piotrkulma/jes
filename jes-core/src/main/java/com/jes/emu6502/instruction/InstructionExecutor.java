@@ -29,15 +29,15 @@ public class InstructionExecutor {
         initializeMethodMap();
     }
 
-    public void executeOperation(Mnemonic mne, int[] p) throws Exception {
-        invokeMethod(mne, p);
+    public void executeOperation(Instruction instr, int[] p) throws Exception {
+        invokeMethod(instr, p);
     }
 
-    private void invokeMethod(Mnemonic mne, int[] p) throws Exception {
-        Method method = methodMap.get(mne);
+    private void invokeMethod(Instruction instr, int[] p) throws Exception {
+        Method method = methodMap.get(instr.getMnemonic());
 
         if(method == null) {
-            throw new RuntimeException(MessageFormat.format("Method not found for mnemonic '''{0}'", mne.name()));
+            throw new RuntimeException(MessageFormat.format("Method not found for mnemonic '''{0}'", instr.getMnemonic().name()));
         }
         int parameters = method.getParameterCount();
 
@@ -47,7 +47,9 @@ public class InstructionExecutor {
             method.invoke(instruction, BinaryMath.byteToIntCorrection(p[0]));
         } else if(parameters == 2){
             method.invoke(instruction, BinaryMath.byteToIntCorrection(p[0]), BinaryMath.byteToIntCorrection(p[1]));
-        } else {
+        } else if(parameters == 3){
+            method.invoke(instruction, BinaryMath.byteToIntCorrection(p[0]), BinaryMath.byteToIntCorrection(p[1]), instr.getAddressingMode());
+        }  else {
             throw new RuntimeException("Too much method parameters");
         }
     }

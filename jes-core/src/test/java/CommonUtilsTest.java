@@ -14,25 +14,25 @@ public class CommonUtilsTest {
 
     @Test
     public void getByteArrayTest() {
-        assertTrue(isEqualsByContent(new int[]{0, 0, 0, 0}, BinaryMath.getBinaryArray(0, 4)));
-        assertTrue(isEqualsByContent(new int[]{0, 0, 0, 1}, BinaryMath.getBinaryArray(1, 4)));
-        assertTrue(isEqualsByContent(new int[]{0, 0, 1, 0}, BinaryMath.getBinaryArray(2, 4)));
-        assertTrue(isEqualsByContent(new int[]{0, 0, 1, 1}, BinaryMath.getBinaryArray(3, 4)));
-        assertTrue(isEqualsByContent(new int[]{0, 1, 0, 0}, BinaryMath.getBinaryArray(4, 4)));
-        assertTrue(isEqualsByContent(new int[]{0, 1, 0, 1}, BinaryMath.getBinaryArray(5, 4)));
-        assertTrue(isEqualsByContent(new int[]{0, 1, 1, 0}, BinaryMath.getBinaryArray(6, 4)));
-        assertTrue(isEqualsByContent(new int[]{0, 1, 1, 1}, BinaryMath.getBinaryArray(7, 4)));
-        assertTrue(isEqualsByContent(new int[]{1, 0, 0, 0}, BinaryMath.getBinaryArray(8, 4)));
+        assertTrue(CommonUtils.isArraysEqualByContent(new int[]{0, 0, 0, 0}, BinaryMath.getBinaryArray(0, 4)));
+        assertTrue(CommonUtils.isArraysEqualByContent(new int[]{0, 0, 0, 1}, BinaryMath.getBinaryArray(1, 4)));
+        assertTrue(CommonUtils.isArraysEqualByContent(new int[]{0, 0, 1, 0}, BinaryMath.getBinaryArray(2, 4)));
+        assertTrue(CommonUtils.isArraysEqualByContent(new int[]{0, 0, 1, 1}, BinaryMath.getBinaryArray(3, 4)));
+        assertTrue(CommonUtils.isArraysEqualByContent(new int[]{0, 1, 0, 0}, BinaryMath.getBinaryArray(4, 4)));
+        assertTrue(CommonUtils.isArraysEqualByContent(new int[]{0, 1, 0, 1}, BinaryMath.getBinaryArray(5, 4)));
+        assertTrue(CommonUtils.isArraysEqualByContent(new int[]{0, 1, 1, 0}, BinaryMath.getBinaryArray(6, 4)));
+        assertTrue(CommonUtils.isArraysEqualByContent(new int[]{0, 1, 1, 1}, BinaryMath.getBinaryArray(7, 4)));
+        assertTrue(CommonUtils.isArraysEqualByContent(new int[]{1, 0, 0, 0}, BinaryMath.getBinaryArray(8, 4)));
 
-        assertTrue(isEqualsByContent(new int[]{0, 0, 0, 0, 0, 0, 0, 0}, BinaryMath.getBinaryArray(0, 8)));
-        assertTrue(isEqualsByContent(new int[]{0, 0, 0, 0, 0, 0, 0, 1}, BinaryMath.getBinaryArray(1, 8)));
-        assertTrue(isEqualsByContent(new int[]{0, 0, 0, 0, 0, 0, 1, 0}, BinaryMath.getBinaryArray(2, 8)));
-        assertTrue(isEqualsByContent(new int[]{0, 0, 0, 0, 0, 0, 1, 1}, BinaryMath.getBinaryArray(3, 8)));
-        assertTrue(isEqualsByContent(new int[]{0, 0, 0, 0, 0, 1, 0, 0}, BinaryMath.getBinaryArray(4, 8)));
-        assertTrue(isEqualsByContent(new int[]{0, 0, 0, 0, 0, 1, 0, 1}, BinaryMath.getBinaryArray(5, 8)));
-        assertTrue(isEqualsByContent(new int[]{0, 0, 0, 0, 0, 1, 1, 0}, BinaryMath.getBinaryArray(6, 8)));
-        assertTrue(isEqualsByContent(new int[]{0, 0, 0, 0, 0, 1, 1, 1}, BinaryMath.getBinaryArray(7, 8)));
-        assertTrue(isEqualsByContent(new int[]{0, 0, 0, 0, 1, 0, 0, 0}, BinaryMath.getBinaryArray(8, 8)));
+        assertTrue(CommonUtils.isArraysEqualByContent(new int[]{0, 0, 0, 0, 0, 0, 0, 0}, BinaryMath.getBinaryArray(0, 8)));
+        assertTrue(CommonUtils.isArraysEqualByContent(new int[]{0, 0, 0, 0, 0, 0, 0, 1}, BinaryMath.getBinaryArray(1, 8)));
+        assertTrue(CommonUtils.isArraysEqualByContent(new int[]{0, 0, 0, 0, 0, 0, 1, 0}, BinaryMath.getBinaryArray(2, 8)));
+        assertTrue(CommonUtils.isArraysEqualByContent(new int[]{0, 0, 0, 0, 0, 0, 1, 1}, BinaryMath.getBinaryArray(3, 8)));
+        assertTrue(CommonUtils.isArraysEqualByContent(new int[]{0, 0, 0, 0, 0, 1, 0, 0}, BinaryMath.getBinaryArray(4, 8)));
+        assertTrue(CommonUtils.isArraysEqualByContent(new int[]{0, 0, 0, 0, 0, 1, 0, 1}, BinaryMath.getBinaryArray(5, 8)));
+        assertTrue(CommonUtils.isArraysEqualByContent(new int[]{0, 0, 0, 0, 0, 1, 1, 0}, BinaryMath.getBinaryArray(6, 8)));
+        assertTrue(CommonUtils.isArraysEqualByContent(new int[]{0, 0, 0, 0, 0, 1, 1, 1}, BinaryMath.getBinaryArray(7, 8)));
+        assertTrue(CommonUtils.isArraysEqualByContent(new int[]{0, 0, 0, 0, 1, 0, 0, 0}, BinaryMath.getBinaryArray(8, 8)));
     }
 
     @Test

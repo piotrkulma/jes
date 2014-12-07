@@ -19,6 +19,7 @@ public class MemoryAccessObserver {
     public static final int VRAM_ADDRESS_REGISTER_1_ADDRESS     = 0x2005;
     public static final int VRAM_ADDRESS_REGISTER_2_ADDRESS     = 0x2006;
     public static final int VRAM_IO_REGISTER_ADDRESS            = 0x2007;
+    public static final int SPRITE_DMA_REGISTER_ADDRESS         = 0x4014;
 
     private Emulator2A03 cpu;
     private Emulator2C02 ppu;
@@ -36,34 +37,39 @@ public class MemoryAccessObserver {
         this.cpu = cpu;
     }
 
-    public void notifySetCPUMemory(int address, byte value) {
-        if(isIORegister(address)) {
+    public void notifyToCPUMemory(int address, byte value) {
+        if (isIORegister(address)) {
+            cpu.modifyMemoryWithoutObserver(address, value);
+            LOG.info("PPU -> CPU IO Register WRITE");
+        }
 
+        if(isDMATransfer(address)) {
+            LOG.info("PPU -> CPU DMA TRANSFER");
+        }
+
+    }
+
+    public void notifyToPPUMemory(int address, byte value) {
+        if (isIORegister(address)) {
+            ppu.modifyMemoryWithoutObserver(address, value);
+            LOG.info("CPU -> PPU IO Register WRITE");
+        }
+
+        if(isDMATransfer(address)) {
+            LOG.info("CPU -> PPU DMA TRANSFER");
         }
     }
 
-    public byte notifyGetCPUMemory(int address) {
-        if(isIORegister(address)) {
-
-        }
-        return 0;
-    }
-
-    public void notifySetPPUMemory(int address, byte value) {
-        if(isIORegister(address)) {
-
+    private boolean isIORegister(int address) {
+        if(address >= PPU_CONTROL_REGISTER_1_ADDRESS && address <= VRAM_IO_REGISTER_ADDRESS) {
+            return true;
+        } else {
+            return false;
         }
     }
 
-    public byte notifyGetPPUMemory(int address) {
-        if(isIORegister(address)) {
-
-        }
-        return 0;
-    }
-
-    public boolean isIORegister(int address) {
-        if((address - 0x2000) >= 0 && (address - 0x2000) <=7) {
+    private boolean isDMATransfer(int address) {
+        if(address == SPRITE_DMA_REGISTER_ADDRESS) {
             return true;
         } else {
             return false;

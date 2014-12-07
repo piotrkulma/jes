@@ -12,28 +12,28 @@ public class BinaryMathTest {
    @Test
     public void highTest() {
         assertTrue(
-                CommonUtils.isEqualsByContent(
+                CommonUtils.isArraysEqualByContent(
                         new int[]{1, 1, 1, 1, 1, 1, 1, 1},
                         get16BitHighValue(new int[]{1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0})
                 )
         );
 
        assertTrue(
-               CommonUtils.isEqualsByContent(
+               CommonUtils.isArraysEqualByContent(
                        new int[]{0, 1, 0, 1, 0, 1, 0, 1},
                        get16BitHighValue(new int[]{0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0})
                )
        );
 
        assertTrue(
-               CommonUtils.isEqualsByContent(
+               CommonUtils.isArraysEqualByContent(
                        new int[]{0, 1, 0, 1, 0, 1, 0, 1},
                        get16BitHighValue(new int[]{0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1})
                )
        );
 
        assertTrue(
-               CommonUtils.isEqualsByContent(
+               CommonUtils.isArraysEqualByContent(
                        new int[]{1, 1, 1, 1, 0, 0, 0, 0},
                        get16BitHighValue(new int[]{1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1})
                )
@@ -43,32 +43,52 @@ public class BinaryMathTest {
     @Test
     public void lowTest() {
         assertTrue(
-                CommonUtils.isEqualsByContent(
+                CommonUtils.isArraysEqualByContent(
                         new int[]{1, 1, 1, 1, 1, 1, 1, 1},
                         get16BitLowValue(new int[]{0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1})
                 )
         );
 
         assertTrue(
-                CommonUtils.isEqualsByContent(
+                CommonUtils.isArraysEqualByContent(
                         new int[]{0, 1, 0, 1, 0, 1, 0, 1},
                         get16BitLowValue(new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1})
                 )
         );
 
         assertTrue(
-                CommonUtils.isEqualsByContent(
+                CommonUtils.isArraysEqualByContent(
                         new int[]{0, 1, 0, 1, 0, 1, 0, 1},
                         get16BitLowValue(new int[]{1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1})
                 )
         );
 
         assertTrue(
-                CommonUtils.isEqualsByContent(
+                CommonUtils.isArraysEqualByContent(
                         new int[]{1, 1, 1, 1, 0, 0, 0, 0},
                         get16BitLowValue(new int[]{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0})
                 )
         );
+    }
+
+    @Test
+    public void testGetBinaryArray() {
+        assertEquals("00000001", CommonUtils.byteArrayToBinaryString(BinaryMath.getBinaryArray(1, 8)));
+        assertEquals("00000010", CommonUtils.byteArrayToBinaryString(BinaryMath.getBinaryArray(2, 8)));
+        assertEquals("00000100", CommonUtils.byteArrayToBinaryString(BinaryMath.getBinaryArray(4, 8)));
+        assertEquals("00001000", CommonUtils.byteArrayToBinaryString(BinaryMath.getBinaryArray(8, 8)));
+        assertEquals("00010000", CommonUtils.byteArrayToBinaryString(BinaryMath.getBinaryArray(16, 8)));
+        assertEquals("00100000", CommonUtils.byteArrayToBinaryString(BinaryMath.getBinaryArray(32, 8)));
+        assertEquals("01000000", CommonUtils.byteArrayToBinaryString(BinaryMath.getBinaryArray(64, 8)));
+        assertEquals("10000000", CommonUtils.byteArrayToBinaryString(BinaryMath.getBinaryArray(128, 8)));
+        assertEquals("11111111", CommonUtils.byteArrayToBinaryString(BinaryMath.getBinaryArray(255, 8)));
+
+        assertEquals("00001111", CommonUtils.byteArrayToBinaryString(BinaryMath.getBinaryArray(15, 8)));
+        assertEquals("11110000", CommonUtils.byteArrayToBinaryString(BinaryMath.getBinaryArray(240, 8)));
+
+        assertEquals("00000000", CommonUtils.byteArrayToBinaryString(BinaryMath.getBinaryArray(256, 8)));
+        assertEquals("00000001", CommonUtils.byteArrayToBinaryString(BinaryMath.getBinaryArray(257, 8)));
+        assertEquals("11110100", CommonUtils.byteArrayToBinaryString(BinaryMath.getBinaryArray(500, 8)));
     }
 
     @Test

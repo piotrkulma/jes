@@ -38,7 +38,9 @@ public class Disassembler {
 
                 if (bytes > 0) {
                     for (int j = 0; j < bytes; j++) {
-                        instruction += " " + CommonUtils.convertBCDtoHex(machineCode[++i]);
+                        if(i + 1 < 32768) {
+                            instruction += " " + CommonUtils.convertBCDtoHex(machineCode[++i]);
+                        }
                     }
                 }
                 asmCode.add(Integer.toHexString(instrNumber++) + " " + instruction);

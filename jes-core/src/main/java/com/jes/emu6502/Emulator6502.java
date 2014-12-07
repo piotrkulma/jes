@@ -4,6 +4,7 @@ import com.jes.Configuration;
 import com.jes.emu6502.addressing.AddressingModeValueResolver;
 import com.jes.emu6502.instruction.Instruction;
 import com.jes.emu6502.instruction.InstructionExecutor;
+import com.jes.emu6502.instruction.Mnemonic;
 import com.jes.emu6502.instruction.OpCodeConf;
 import com.jes.utils.BinaryMath;
 import com.jes.utils.CommonUtils;
@@ -26,7 +27,8 @@ import java.util.Map;
 public class Emulator6502 {
     public static Logger LOG = LogManager.getLogger(Emulator6502.class);
 
-    public static final int CPU_MEMORY_SIZE         = 0x10000;
+    public static final int CPU_MEMORY_SIZE                     = 0x10000;
+    public static final int CPU_PROGRAM_MEMORY_BEGIN_ADDRESS    = 32768;
 
     public int pc;
     public int accum;
@@ -35,7 +37,7 @@ public class Emulator6502 {
     public int sp;
     public StatusRegister sr;
 
-    private byte[] memoryMap;
+    public byte[] memoryMap;
 
     private Map<String, OpCodeConf> operationCodeMap;
 
@@ -52,11 +54,11 @@ public class Emulator6502 {
     }
 
    public void setMemoryCell(int address, byte value) {
-        memoryMap[address] = value;
+        memoryMap[BinaryMath.byteToIntCorrection(address)] = value;
     }
 
     public byte getMemoryCell(int address) {
-        return memoryMap[address];
+        return memoryMap[BinaryMath.byteToIntCorrection(address)];
     }
 
     public byte getStatusRegister() {
@@ -76,65 +78,50 @@ public class Emulator6502 {
         sr.N = array[0];
         sr.V = array[1];
         //none = array[2];
-        sr.B = array[3];
+
+        //b pozostaje nie zmienione
+        //sr.B = array[3];
         sr.D = array[4];
         sr.I = array[5];
         sr.Z = array[6];
         sr.C = array[7];
     }
 
-    public void runEmulation() throws Exception{
-        Instruction instr;
-        int[] parameters;
-        while (true) {
-            LOG.info(MessageFormat.format("Actual line: 0x{0} ({1})", CommonUtils.convertBCDtoHex(pc), pc));
-            instr = nextInstruction();
-            LOG.info(instr);
-
-            parameters = addressingResolver.resolveValue(instr.getAddressingMode(), instr.getParameters());
-
-            if (parameters.length == 1) {
-                LOG.info(MessageFormat.format("Resolved parameters v:0x{0} ", CommonUtils.convertBCDtoHex(parameters[0])));
-            } else if (parameters.length == 2) {
-                LOG.info(MessageFormat.format("Resolved parameters v:0x{0} a:0x{1} ",
-                        CommonUtils.convertBCDtoHex(parameters[0]),
-                        CommonUtils.convertBCDtoHex(parameters[1])));
-            }
-
-            instructionExecutor.executeOperation(instr.getMnemonic(), parameters);
-
-            LOG.info(this);
-            Thread.sleep(1000);
-
-            LOG.info("##########");
+    public void interrupt(InterruptType interrupt) throws Exception {
+        Instruction instr = new Instruction();
+        instr.setMnemonic(Mnemonic.NMI);
+        switch (interrupt) {
+            case NMI: instructionExecutor.executeOperation(instr, new int[]{});
         }
+
     }
 
-    @Override
-    public String toString() {
-        StringBuffer stringBuff = new StringBuffer("");
+    public void executeInstruction() throws Exception{
+        Instruction instr;
+        int[] parameters;
 
-        stringBuff.append("Emulator6502=[ ");
-        stringBuff.append(sr);
-        stringBuff.append(", PC: ");
-        stringBuff.append(pc);
-        stringBuff.append(", SP: ");
-        stringBuff.append(sp);
-        stringBuff.append(", A: ");
-        stringBuff.append(accum);
-        stringBuff.append(", X: ");
-        stringBuff.append(regX);
-        stringBuff.append(", Y: ");
-        stringBuff.append(regY);
-        stringBuff.append(" ] ");
-        return stringBuff.toString();
+        LOG.info(MessageFormat.format("{0} {1} {2}", CommonUtils.convertBCDtoHex(pc).toUpperCase(), pc, this));
+        instr = nextInstruction();
+        LOG.info(instr);
+
+        parameters = addressingResolver.resolveValue(instr.getAddressingMode(), instr.getParameters());
+
+        if (parameters.length == 1) {
+            //LOG.info(MessageFormat.format("Resolved parameters v:0x{0} ", CommonUtils.convertBCDtoHex(parameters[0])));
+        } else if (parameters.length == 2) {
+            //LOG.info(MessageFormat.format("Resolved parameters v:0x{0} a:0x{1} ",
+            //CommonUtils.convertBCDtoHex(parameters[0]),
+            //CommonUtils.convertBCDtoHex(parameters[1])));
+        }
+
+        instructionExecutor.executeOperation(instr, parameters);
     }
 
     private Instruction nextInstruction() {
         Instruction instr = null;
 
         String operationCode = CommonUtils.convertBCDtoHex(memoryMap[pc++]);
-        StringBuffer buffer = new StringBuffer("Raw code: ");
+        StringBuffer buffer = new StringBuffer();
         buffer.append(operationCode);
         buffer.append(" ");
         if(operationCodeMap.containsKey(operationCode)) {
@@ -150,7 +137,7 @@ public class Emulator6502 {
             }
         }
 
-        LOG.info(buffer.toString());
+        LOG.info(MessageFormat.format("{0} {1}", buffer.toString().toUpperCase(), instr));
         return instr;
     }
 
@@ -180,12 +167,35 @@ public class Emulator6502 {
     }
 
     private void initializeRegisters() {
-        pc = 32768;
+        pc = CPU_PROGRAM_MEMORY_BEGIN_ADDRESS;
         accum = 0;
         regX = 0;
         regY = 0;
-        sp = 0;
+        sp = 255;
 
         sr = new StatusRegister();
+    }
+
+    @Override
+    public String toString() {
+        StringBuffer stringBuff = new StringBuffer("");
+
+        stringBuff.append("Emulator6502=[ ");
+        stringBuff.append(" PC: ");
+        stringBuff.append(pc);
+        stringBuff.append(", SP: ");
+        stringBuff.append(sp);
+        stringBuff.append(", A: ");
+        stringBuff.append(accum);
+        stringBuff.append(", X: ");
+        stringBuff.append(regX);
+        stringBuff.append(", Y: ");
+        stringBuff.append(regY);
+        stringBuff.append(", SR:");
+        stringBuff.append(Integer.toHexString(BinaryMath.byteToIntCorrection(getStatusRegister())).toUpperCase());
+        stringBuff.append(", ");
+        stringBuff.append(sr);
+        stringBuff.append(" ] ");
+        return stringBuff.toString();
     }
 }

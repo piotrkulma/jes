@@ -3,6 +3,8 @@ package com.jes.nes;
 import com.jes.emu2C02.Emulator2C02;
 import com.jes.emu6502.Emulator2A03;
 import com.jes.nesfile.NESFile;
+import com.jes.utils.BinaryMath;
+import com.jes.utils.CommonUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -34,7 +36,11 @@ public class Nes {
     }
 
     public void runNesEmulation() throws Exception {
-        cpu.runEmulation();
+        while(true) {
+            LOG.info("*****************************************************************************************************************************");
+            cpu.executeInstruction();
+            Thread.sleep(1);
+        }
     }
 
     private void initialize() throws Exception {

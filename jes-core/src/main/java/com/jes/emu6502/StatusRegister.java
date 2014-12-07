@@ -13,7 +13,7 @@ public class StatusRegister {
     //decimal flag
     public int D = 0;
     //interrupt flag
-    public int I = 0;
+    public int I = 1;
     //zero flag
     public int Z = 0;
     //carry flag
@@ -28,6 +28,8 @@ public class StatusRegister {
         stringBuff.append(N);
         stringBuff.append(", V: ");
         stringBuff.append(V);
+        stringBuff.append(", #: ");
+        stringBuff.append(1);
         stringBuff.append(", B: ");
         stringBuff.append(B);
         stringBuff.append(", D: ");

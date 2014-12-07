@@ -19,6 +19,9 @@ public class Instruction {
         this.parameters = new byte[parametersNumber];
     }
 
+    public Instruction() {
+    }
+
     public Mnemonic getMnemonic() {
         return mnemonic;
     }
@@ -55,20 +58,20 @@ public class Instruction {
     public String toString() {
         StringBuffer stringBuff = new StringBuffer("");
 
-        stringBuff.append("Instruction [ ");
+        //stringBuff.append("Instruction [ ");
         stringBuff.append(" mnemonic: ");
         stringBuff.append(mnemonic.name());
-        stringBuff.append(", addressingMode: ");
+        stringBuff.append(" ");
         stringBuff.append(addressingMode.name());
-        stringBuff.append(", parametersNumber: ");
-        stringBuff.append(parametersNumber);
-        stringBuff.append(", parameters: [");
+        //stringBuff.append(", parametersNumber: ");
+        //stringBuff.append(parametersNumber);
+        stringBuff.append(" [");
         for(int i=0; i<parameters.length; i++) {
             stringBuff.append(BinaryMath.byteToIntCorrection(parameters[i]));
             stringBuff.append(" ");
         }
         stringBuff.append("]");
-        stringBuff.append(" ]");
+        //stringBuff.append(" ]");
         return stringBuff.toString();
     }
 }

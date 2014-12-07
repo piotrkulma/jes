@@ -26,7 +26,7 @@ public class Emulator2A03 extends Emulator6502 {
     public void setMemoryCell(int address, byte value) {
         address = getAddress(address);
 
-        memoryObserver.notifySetCPUMemory(address, value);
+        memoryObserver.notifyToPPUMemory(address, value);
         super.setMemoryCell(address, value);
     }
 
@@ -34,8 +34,12 @@ public class Emulator2A03 extends Emulator6502 {
     public byte getMemoryCell(int address) {
         address = getAddress(address);
 
-        memoryObserver.notifyGetCPUMemory(address);
         return super.getMemoryCell(address);
+    }
+
+    public void modifyMemoryWithoutObserver(int address, byte value) {
+        address = getAddress(address);
+        super.setMemoryCell(address, value);
     }
 
     private int getAddress(int address) {

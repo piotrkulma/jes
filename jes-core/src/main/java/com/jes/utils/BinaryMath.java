@@ -80,8 +80,15 @@ public final class BinaryMath {
             bin = addZerosBefore(bin, diff);
         }
 
-        for(int i=0; i<bin.length(); i++) {
-            array[i] = (bin.charAt(i) - 48);
+        if(diff < 0) {
+            diff = Math.abs(diff);
+            for (int i = diff; i < bin.length(); i++) {
+                array[i-diff] = (bin.charAt(i) - 48);
+            }
+        } else {
+            for (int i = 0; i < bin.length(); i++) {
+                array[i] = (bin.charAt(i) - 48);
+            }
         }
 
         return array;

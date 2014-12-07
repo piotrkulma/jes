@@ -1,6 +1,7 @@
 package com.jes.emu6502.instruction;
 
 import com.jes.emu6502.Emulator6502;
+import com.jes.emu6502.addressing.AddressingMode;
 import com.jes.utils.BinaryMath;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -140,9 +141,41 @@ public class InstructionImplementation {
 
         //pobierz adres z wierzchołak stosu 0x FFFF FFFE i ustaw w pc
         int addrL = cpu.getMemoryCell(0xFFFE);
-        int addrH = cpu.getMemoryCell(0xFFFF) << 8;
+        int addrH = BinaryMath.byteToIntCorrection(cpu.getMemoryCell(0xFFFF)) << 8;
 
-        cpu.pc = addrH | addrL;
+        cpu.pc = BinaryMath.byteToIntCorrection(addrH) | BinaryMath.byteToIntCorrection(addrL);
+    }
+
+    /**
+     * Nie ma takiej instrukcji jest to obsługa przerwania sprzętowego.
+     * Ze względu na podobieństwo do BRK (różni się tylko adresem skoku
+     * i brakiem ustawienie bitu 4 w SR)
+     * wrzucam tutaj.
+     */
+
+    @InstructionImpl
+    public void nmi() {
+        cpu.pc = cpu.pc + 1;
+
+        //odłuż na stos najbardziej znaczącą część licznika rozkazów
+        cpu.setMemoryCell(cpu.sp, BinaryMath.high(cpu.pc));
+        cpu.sp = (cpu.sp - 1);
+
+        //odłuż na stos najmniej znaczącą część licznika rozkazów
+        cpu.setMemoryCell(cpu.sp, BinaryMath.low(cpu.pc));
+        cpu.sp = (cpu.sp - 1);
+
+        //odłuż na stos bit statusu
+        int[] sr = cpu.getStatusRegisterArray();
+
+        cpu.setMemoryCell(cpu.sp, (byte)BinaryMath.binaryToDecimal(sr));
+        cpu.sp = (cpu.sp - 1);
+
+        //pobierz adres z wierzchołak stosu 0x FFFA FFFB i ustaw w pc
+        int addrL = cpu.getMemoryCell(0xFFFA);
+        int addrH = BinaryMath.byteToIntCorrection(cpu.getMemoryCell(0xFFFB)) << 8;
+
+        cpu.pc = BinaryMath.byteToIntCorrection(addrH) | BinaryMath.byteToIntCorrection(addrL);
     }
 
     @InstructionImpl
@@ -265,13 +298,13 @@ public class InstructionImplementation {
 
     @InstructionImpl
     //goto address
-    public void jmp(int address) {
+    public void jmp(int none, int address) {
         cpu.pc = address;
     }
 
     @InstructionImpl
     //jump to subroutine
-    public void jsr(int b) {
+    public void jsr(int none, int address) {
         int test = cpu.pc - 1;
 
         cpu.setMemoryCell(cpu.sp, BinaryMath.high(test));
@@ -280,7 +313,7 @@ public class InstructionImplementation {
         cpu.setMemoryCell(cpu.sp, BinaryMath.low(test));
         cpu.sp = (cpu.sp - 1);
 
-        cpu.pc = b;
+        cpu.pc = address;
     }
 
     @InstructionImpl
@@ -309,13 +342,17 @@ public class InstructionImplementation {
 
     @InstructionImpl
     //logical shift right
-    public void lsr(int b, int address) {
+    public void lsr(int b, int address, AddressingMode mode) {
         cpu.sr.N = 0;
         cpu.sr.C = getBinaryArray(b)[_0];
         b = ((b >> 1) & 0x7F);
         cpu.sr.Z = isZero(b);
 
-        cpu.setMemoryCell(address, (byte)b);
+        if(mode != AddressingMode.ACC) {
+            cpu.setMemoryCell(address, (byte) b);
+        } else {
+            cpu.accum = (byte) b;
+        }
     }
 
     @InstructionImpl
@@ -391,17 +428,17 @@ public class InstructionImplementation {
     @InstructionImpl
     //return from interrupt
     public void rti() {
-        cpu.sp = (cpu.sp - 1);
+        cpu.sp = (cpu.sp + 1);
         byte sr = cpu.getMemoryCell(cpu.sp);
         cpu.setStatusRegister(sr);
 
-        cpu.sp = (cpu.sp - 1);
+        cpu.sp = (cpu.sp + 1);
         int l = cpu.getMemoryCell(cpu.sp);
 
-        cpu.sp = (cpu.sp - 1);
-        int h = cpu.getMemoryCell(cpu.sp) << 8;
+        cpu.sp = (cpu.sp + 1);
+        int h = BinaryMath.byteToIntCorrection(cpu.getMemoryCell(cpu.sp)) << 8;
 
-        cpu.pc = (h | l);
+        cpu.pc = (BinaryMath.byteToIntCorrection(h) | BinaryMath.byteToIntCorrection(l));
     }
 
     @InstructionImpl
@@ -411,9 +448,9 @@ public class InstructionImplementation {
         int l = cpu.getMemoryCell(cpu.sp);
 
         cpu.sp = (cpu.sp + 1);
-        int h = cpu.getMemoryCell(cpu.sp) << 8;
+        int h = BinaryMath.byteToIntCorrection(cpu.getMemoryCell(cpu.sp)) << 8;
 
-        cpu.pc = (h | l) + 1;
+        cpu.pc = (BinaryMath.byteToIntCorrection(h) | BinaryMath.byteToIntCorrection(l)) + 1;
     }
 
     @InstructionImpl
@@ -454,20 +491,20 @@ public class InstructionImplementation {
 
     @InstructionImpl
     //store A in memory
-    public void sta(int m) {
-        cpu.setMemoryCell(m, (byte)cpu.accum);
+    public void sta(int none, int address) {
+        cpu.setMemoryCell(address, (byte)cpu.accum);
     }
 
 
     @InstructionImpl  //store X in memory
-    public void stx(int m) {
-        cpu.setMemoryCell(m, (byte)cpu.regX);
+    public void stx(int none, int address) {
+        cpu.setMemoryCell(address, (byte)cpu.regX);
     }
 
     @InstructionImpl
     //store Y in memory
-    public void sty(int m) {
-        cpu.setMemoryCell(m, (byte)cpu.regY);
+    public void sty(int none, int address) {
+        cpu.setMemoryCell(address, (byte)cpu.regY);
     }
 
     @InstructionImpl

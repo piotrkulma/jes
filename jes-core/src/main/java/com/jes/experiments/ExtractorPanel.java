@@ -25,7 +25,7 @@ public class ExtractorPanel extends JPanel {
 
     public ExtractorPanel() {
         nesFile = NesFileBuilder.buildNESFile(Configuration.TEST_ROM_PATH);
-        nes = new Nes(nesFile);
+        //nes = new Nes(nesFile);
         extractor = new VROMExtractor();
     }
 
@@ -36,7 +36,7 @@ public class ExtractorPanel extends JPanel {
     }
 
     private void drawNesBitmaps(Graphics2D g2d) {
-        byte[] vrom = CommonUtils.getPartialArray(nes.getPpuMemoryMap(),
+/*        byte[] vrom = CommonUtils.getPartialArray(nes.getPpuMemoryMap(),
                 Nes.PPU_PATTERN_TABLES_BEGIN_ADDR,
                 Nes.PPU_PATTERN_TABLES_END_ADDR);
 
@@ -44,7 +44,7 @@ public class ExtractorPanel extends JPanel {
 
         List<Tile> tileList = extractor.extract();
 
-        draw(g2d, tileList);
+        draw(g2d, tileList);*/
     }
 
     private void draw(Graphics2D g2d, List<Tile> tileList) {
